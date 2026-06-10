@@ -88,3 +88,7 @@ dependencies {
   // Lifecycle Service
   implementation("androidx.lifecycle:lifecycle-service:2.7.0")
 }
+
+dependencies {
+    implementation("androidx.compose.material:material-icons-core")
+}
