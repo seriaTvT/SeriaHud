@@ -5,20 +5,31 @@ plugins {
 }
 
 android {
-    namespace = "com.example.seriahud"
+    namespace = "org.chtholly.seriahud"
     compileSdk = 36
     defaultConfig {
-        applicationId = "com.example.seriahud"
+        applicationId = "org.chtholly.seriahud"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("../release.keystore")
+            storePassword = "password"
+            keyAlias = "release"
+            keyPassword = "password"
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
