@@ -28,12 +28,24 @@ data class SystemStats(
 
 class MonitorManager {
 
-    private var lastTotalTime = 0L
-    private var lastIdleTime = 0L
-    
     private var activeWindows: List<String> = emptyList()
     private var lastFpsCheckFrames = LongArray(128)
     private var windowUpdateCounter = 0
+
+    private var hardwareProvider: IHardwareProvider = MtkHardwareProvider() // default
+
+    init {
+        val platform = Shell.cmd("getprop ro.board.platform").exec().out.joinToString("").lowercase()
+        val hardware = Shell.cmd("getprop ro.hardware").exec().out.joinToString("").lowercase()
+        if (platform.contains("mt") || hardware.contains("mt")) {
+            hardwareProvider = MtkHardwareProvider()
+        } else if (platform.contains("lito") || platform.contains("sm") || platform.contains("msm") || hardware.contains("qcom")) {
+            hardwareProvider = QcomHardwareProvider()
+        } else {
+            // fallback
+            hardwareProvider = MtkHardwareProvider()
+        }
+    }
 
     fun getStatsFlow(): Flow<SystemStats> = flow {
         if (!Shell.getShell().isRoot) {
@@ -78,136 +90,15 @@ class MonitorManager {
         }
 
         val sfCmds = activeWindows.flatMap { listOf("dumpsys SurfaceFlinger --latency '$it'", "echo 'NEXT_LAYER'") }.toTypedArray()
-        val cmds = arrayOf(
-            "cat /proc/stat | grep -w cpu",
-            "cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq",
-            "cat /sys/module/ged/parameters/gpu_loading",
-            "cat /sys/kernel/ged/hal/current_freqency",
-            "cat /sys/class/thermal/thermal_zone4/temp",
-            "cat /sys/class/power_supply/battery/voltage_now",
-            "cat /sys/class/power_supply/battery/current_now",
-            "cat /sys/class/power_supply/battery/temp",
-            "cat /proc/meminfo | head -n 3"
-        ) + sfCmds
+        
+        val hardwareCmds = hardwareProvider.getCommands()
+        val cmds = hardwareCmds + sfCmds
+        
         val result = Shell.cmd(*cmds).exec()
         val out = result.out
 
-        var cpuUsage = 0f
-        val cpuFreqs = mutableListOf<Int>()
-        var gpuUsage = 0
-        var gpuFreq = 0
-        var socTemp = 0f
-        var bVoltage = 0f
-        var bCurrent = 0f
-        var bTemp = 0f
-
-        var ramTotal = 0L
-        var ramFree = 0L
-        var ramAvailable = 0L
-
-        var lineIndex = 0
-
-        if (lineIndex < out.size && out[lineIndex].startsWith("cpu ")) {
-            val parts = out[lineIndex].trim().split("\\s+".toRegex())
-            if (parts.size >= 5) {
-                val user = parts[1].toLong()
-                val nice = parts[2].toLong()
-                val system = parts[3].toLong()
-                val idle = parts[4].toLong()
-                val iowait = if (parts.size > 5) parts[5].toLong() else 0L
-                val irq = if (parts.size > 6) parts[6].toLong() else 0L
-                val softirq = if (parts.size > 7) parts[7].toLong() else 0L
-
-                val totalIdle = idle + iowait
-                val totalTime = user + nice + system + idle + iowait + irq + softirq
-
-                if (lastTotalTime != 0L) {
-                    val totalDelta = totalTime - lastTotalTime
-                    val idleDelta = totalIdle - lastIdleTime
-                    if (totalDelta > 0) {
-                        cpuUsage = (1f - idleDelta.toFloat() / totalDelta.toFloat()) * 100f
-                    }
-                }
-                lastTotalTime = totalTime
-                lastIdleTime = totalIdle
-            }
-            lineIndex++
-        }
-
-        for (i in 0 until 8) {
-            if (lineIndex < out.size) {
-                val line = out[lineIndex]
-                line.toIntOrNull()?.let { freq ->
-                    cpuFreqs.add(freq / 1000)
-                }
-                if (line.isNotEmpty()) lineIndex++
-            }
-        }
-
-        if (lineIndex < out.size && out[lineIndex].toIntOrNull() != null) {
-            gpuUsage = out[lineIndex].toInt()
-            lineIndex++
-        } else {
-            // handle edge cases where the previous block consumed fewer lines
-            while (lineIndex < out.size && out[lineIndex].toIntOrNull() == null && !out[lineIndex].contains(" ")) {
-                lineIndex++
-            }
-            if (lineIndex < out.size && out[lineIndex].toIntOrNull() != null) {
-                gpuUsage = out[lineIndex].toInt()
-                lineIndex++
-            }
-        }
-
-        if (lineIndex < out.size) {
-            val parts = out[lineIndex].trim().split("\\s+".toRegex())
-            if (parts.size >= 2) {
-                gpuFreq = (parts[1].toIntOrNull() ?: 0) / 1000
-            }
-            lineIndex++
-        }
-
-        if (lineIndex < out.size) {
-            socTemp = (out[lineIndex].toFloatOrNull() ?: 0f) / 1000f
-            lineIndex++
-        }
-
-        if (lineIndex < out.size) {
-            bVoltage = (out[lineIndex].toFloatOrNull() ?: 0f) / 1000000f
-            lineIndex++
-        }
-
-        if (lineIndex < out.size) {
-            bCurrent = (out[lineIndex].toFloatOrNull() ?: 0f) / 1000000f
-            lineIndex++
-        }
-
-        if (lineIndex < out.size) {
-            bTemp = (out[lineIndex].toFloatOrNull() ?: 0f) / 10f
-            lineIndex++
-        }
-
-        // Parse meminfo
-        for (i in 0 until 3) {
-            if (lineIndex < out.size && out[lineIndex].startsWith("Mem")) {
-                val parts = out[lineIndex].split("\\s+".toRegex())
-                if (parts.size >= 2) {
-                    val value = parts[1].toLongOrNull() ?: 0L
-                    when {
-                        out[lineIndex].startsWith("MemTotal:") -> ramTotal = value
-                        out[lineIndex].startsWith("MemFree:") -> ramFree = value
-                        out[lineIndex].startsWith("MemAvailable:") -> ramAvailable = value
-                    }
-                }
-                lineIndex++
-            }
-        }
-
-        val ramUsed = ramTotal - (if (ramAvailable > 0) ramAvailable else ramFree)
-        val ramUsagePct = if (ramTotal > 0) (ramUsed.toFloat() / ramTotal.toFloat()) * 100f else 0f
-        val ramUsedGB = ramUsed / 1024f / 1024f
-        val ramTotalGB = ramTotal / 1024f / 1024f
-
-        val power = bVoltage * abs(bCurrent)
+        val builder = SystemStatsBuilder()
+        var lineIndex = hardwareProvider.parseOutput(out, 0, builder)
 
         // Parse SurfaceFlinger
         var maxFps = 0
@@ -273,24 +164,6 @@ class MonitorManager {
             }
         }
         
-        val fps = maxFps
-        val frametime = bestFrametime
-
-        return SystemStats(
-            cpuUsage = cpuUsage,
-            cpuFrequencies = cpuFreqs,
-            gpuUsage = gpuUsage,
-            gpuFreq = gpuFreq,
-            socTemp = socTemp,
-            batteryVoltage = bVoltage,
-            batteryCurrent = bCurrent,
-            batteryPower = power,
-            batteryTemp = bTemp,
-            ramUsage = ramUsagePct,
-            ramUsedGB = ramUsedGB,
-            ramTotalGB = ramTotalGB,
-            fps = fps,
-            frametime = frametime
-        )
+        return builder.build(fps = maxFps, frametime = bestFrametime)
     }
 }
