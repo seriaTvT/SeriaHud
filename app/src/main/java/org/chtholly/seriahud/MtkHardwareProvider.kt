@@ -26,8 +26,12 @@ class MtkHardwareProvider : AbstractHardwareProvider() {
             }
         }
         
-        // Prefer power_supply for battery temp if it exists and is readable
+        // Battery voltage/current/temp from power_supply
         val pmi = "/sys/class/power_supply/battery"
+        if (Shell.cmd("ls $pmi/voltage_now").exec().isSuccess) battVoltagePath = "$pmi/voltage_now"
+        if (Shell.cmd("ls $pmi/current_now").exec().isSuccess) battCurrentPath = "$pmi/current_now"
+        
+        // Prefer power_supply for battery temp if it exists and is readable
         if (Shell.cmd("ls $pmi/temp").exec().isSuccess) {
             battTempPath = "$pmi/temp"
         }
