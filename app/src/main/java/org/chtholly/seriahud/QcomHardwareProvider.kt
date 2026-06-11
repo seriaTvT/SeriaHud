@@ -70,6 +70,16 @@ class QcomHardwareProvider : IHardwareProvider {
         return cmds.toTypedArray()
     }
 
+    override fun getDetectedPaths(): Map<String, String> {
+        val paths = mutableMapOf<String, String>()
+        paths["CPU"] = "cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq"
+        if (gpuUsagePath.isNotEmpty()) paths["GPU Usage"] = gpuUsagePath
+        if (gpuFreqPath.isNotEmpty()) paths["GPU Freq"] = gpuFreqPath
+        if (socTempPath.isNotEmpty()) paths["SOC Temp"] = socTempPath
+        if (battTempPath.isNotEmpty()) paths["Battery Temp"] = battTempPath
+        return paths
+    }
+
     override fun parseOutput(out: List<String>, startIndex: Int, builder: SystemStatsBuilder): Int {
         var lineIndex = startIndex
 

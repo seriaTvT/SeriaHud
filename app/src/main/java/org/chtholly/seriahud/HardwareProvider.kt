@@ -5,6 +5,7 @@ interface IHardwareProvider {
     
     // Parses the command output starting from lineIndex.
     // Returns the new lineIndex and populates the given SystemStatsBuilder.
+    fun getDetectedPaths(): Map<String, String>
     fun parseOutput(out: List<String>, startIndex: Int, builder: SystemStatsBuilder): Int
 }
 

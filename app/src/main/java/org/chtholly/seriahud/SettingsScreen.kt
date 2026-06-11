@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
@@ -21,42 +22,42 @@ fun SettingsScreen(configManager: HudConfigManager) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Display Items", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+        Text(stringResource(R.string.setting_display_items), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
         
-        SwitchSetting("Show CPU Overall", config.showCpuOverall) {
+        SwitchSetting(stringResource(R.string.setting_show_cpu_overall), config.showCpuOverall) {
             configManager.updateConfig(config.copy(showCpuOverall = it))
         }
         
-        SwitchSetting("Show GPU", config.showGpu) {
+        SwitchSetting(stringResource(R.string.setting_show_gpu), config.showGpu) {
             configManager.updateConfig(config.copy(showGpu = it))
         }
         
-        SwitchSetting("Show RAM", config.showRam) {
+        SwitchSetting(stringResource(R.string.setting_show_ram), config.showRam) {
             configManager.updateConfig(config.copy(showRam = it))
         }
         
-        SwitchSetting("Show SoC Temp", config.showSocTemp) {
+        SwitchSetting(stringResource(R.string.setting_show_soc_temp), config.showSocTemp) {
             configManager.updateConfig(config.copy(showSocTemp = it))
         }
         
-        SwitchSetting("Show Battery", config.showBattery) {
+        SwitchSetting(stringResource(R.string.setting_show_battery), config.showBattery) {
             configManager.updateConfig(config.copy(showBattery = it))
         }
         
-        SwitchSetting("Show FPS / Frametime", config.showFps) {
+        SwitchSetting(stringResource(R.string.setting_show_fps), config.showFps) {
             configManager.updateConfig(config.copy(showFps = it))
         }
 
         HorizontalDivider()
 
-        Text("CPU Cores Configuration", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+        Text(stringResource(R.string.setting_cpu_cores_config), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
         
-        SwitchSetting("Show Individual CPU Cores", config.showCpuCores) {
+        SwitchSetting(stringResource(R.string.setting_show_individual_cores), config.showCpuCores) {
             configManager.updateConfig(config.copy(showCpuCores = it))
         }
         
         if (config.showCpuCores) {
-            Text("Select Cores to Monitor:", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.setting_select_cores), style = MaterialTheme.typography.bodyMedium)
             // 8 cores total
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 for (i in 0..3) {
@@ -80,13 +81,13 @@ fun SettingsScreen(configManager: HudConfigManager) {
 
         HorizontalDivider()
 
-        Text("Advanced Features", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+        Text(stringResource(R.string.setting_advanced_features), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
         
-        SwitchSetting("Show Real-time Frametime Graph", config.showFrametimeGraph) {
+        SwitchSetting(stringResource(R.string.setting_show_frametime_graph), config.showFrametimeGraph) {
             configManager.updateConfig(config.copy(showFrametimeGraph = it))
         }
         
-        SwitchSetting("Show Data Record Button", config.showRecordButton) {
+        SwitchSetting(stringResource(R.string.setting_show_record_button), config.showRecordButton) {
             configManager.updateConfig(config.copy(showRecordButton = it))
         }
     }
@@ -108,6 +109,6 @@ fun SwitchSetting(title: String, checked: Boolean, onCheckedChange: (Boolean) ->
 fun CoreCheckbox(coreId: Int, selected: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Checkbox(checked = selected, onCheckedChange = onCheckedChange)
-        Text("Core $coreId", style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(R.string.setting_core_format, coreId), style = MaterialTheme.typography.bodyMedium)
     }
 }

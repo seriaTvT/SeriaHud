@@ -19,6 +19,16 @@ class MtkHardwareProvider : IHardwareProvider {
         )
     }
 
+    override fun getDetectedPaths(): Map<String, String> {
+        return mapOf(
+            "CPU" to "cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq",
+            "GPU Usage" to "cat /sys/module/ged/parameters/gpu_loading",
+            "GPU Freq" to "cat /sys/kernel/ged/hal/current_freqency",
+            "SOC Temp" to "cat /sys/class/thermal/thermal_zone4/temp",
+            "Battery Temp" to "cat /sys/class/power_supply/battery/temp"
+        )
+    }
+
     override fun parseOutput(out: List<String>, startIndex: Int, builder: SystemStatsBuilder): Int {
         var lineIndex = startIndex
 
