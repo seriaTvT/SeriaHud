@@ -43,3 +43,6 @@ Thumbs.db
 # Custom local tools and scripts (ignored per request)
 /tools/
 release.keystore
+
+#test files
+app/src/test
