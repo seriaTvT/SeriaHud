@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SeriaHud</string>
+    <string name="title_home">Home</string>
+    <string name="title_settings">Settings</string>
+    
+    <string name="btn_start_monitor">Start Monitor</string>
+    <string name="btn_stop_monitor">Stop Monitor</string>
+    <string name="btn_start_record">Start Record</string>
+    <string name="btn_stop_record">Stop Record</string>
+    
+    <string name="card_system_info_title">System Information</string>
+    <string name="sys_model">Model</string>
+    <string name="sys_soc">SoC</string>
+    <string name="sys_ram">RAM</string>
+    
+    <string name="card_paths_title">Advanced: Detected Paths</string>
+    
+    <string name="overlay_cpu">CPU</string>
+    <string name="overlay_gpu">GPU</string>
+    <string name="overlay_ram">RAM</string>
+    <string name="overlay_fps">FPS</string>
+    <string name="overlay_soc_temp">SoC</string>
+    <string name="overlay_batt_temp">BAT</string>
+
+    <string name="setting_display_items">Display Items</string>
+    <string name="setting_show_cpu_overall">Show CPU Overall</string>
+    <string name="setting_show_gpu">Show GPU</string>
+    <string name="setting_show_ram">Show RAM</string>
+    <string name="setting_show_soc_temp">Show SoC Temp</string>
+    <string name="setting_show_battery">Show Battery</string>
+    <string name="setting_show_fps">Show FPS / Frametime</string>
+    
+    <string name="setting_cpu_cores_config">CPU Cores Configuration</string>
+    <string name="setting_show_individual_cores">Show Individual CPU Cores</string>
+    <string name="setting_select_cores">Select Cores to Monitor:</string>
+    <string name="setting_core_format">Core %1$d</string>
+    
+    <string name="setting_advanced_features">Advanced Features</string>
+    <string name="setting_show_frametime_graph">Show Real-time Frametime Graph</string>
+    <string name="setting_show_record_button">Show Data Record Button</string>
+</resources>
