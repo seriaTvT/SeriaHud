@@ -24,12 +24,13 @@ class QcomHardwareProvider : AbstractHardwareProvider() {
         // Find thermal zones
         val thermals = Shell.cmd("for tz in /sys/class/thermal/thermal_zone*; do echo \"\$tz \$(cat \$tz/type)\"; done").exec().out
         for (line in thermals) {
-            if (line.contains("cpu_therm") || line.contains("xo_therm") || line.contains("cpullc-0-0")) {
-                if (socTempPath.isEmpty() || line.contains("cpu_therm")) {
+            val lower = line.lowercase()
+            if (lower.contains("cpu_therm") || lower.contains("msm_therm") || lower.contains("tsens_tz_sensor") || lower.contains("xo_therm") || lower.contains("cpullc-0-0")) {
+                if (socTempPath.isEmpty() || lower.contains("cpu_therm") || lower.contains("msm_therm") || lower.contains("tsens_tz_sensor0")) {
                     socTempPath = line.split(" ")[0] + "/temp"
                 }
             }
-            if (line.contains("batt_therm")) {
+            if (lower.contains("batt_therm") || lower.contains("battery")) {
                 battTempPath = line.split(" ")[0] + "/temp"
             }
         }

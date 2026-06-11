@@ -95,7 +95,13 @@ abstract class AbstractHardwareProvider : IHardwareProvider {
 
         // SOC Temp
         if (lineIndex < out.size) {
-            builder.socTemp = (out[lineIndex].toFloatOrNull() ?: 0f) / 1000f
+            val raw = out[lineIndex].toFloatOrNull() ?: 0f
+            builder.socTemp = when {
+                raw == 0f -> 0f
+                raw < 150f -> raw // degrees
+                raw < 1500f -> raw / 10f // decidegrees
+                else -> raw / 1000f // millidegrees
+            }
             lineIndex++
         }
 
@@ -113,11 +119,12 @@ abstract class AbstractHardwareProvider : IHardwareProvider {
 
         // Batt Temp
         if (lineIndex < out.size) {
-            val rawTemp = out[lineIndex].toFloatOrNull() ?: 0f
-            if (battTempPath.contains("thermal_zone")) {
-                builder.bTemp = rawTemp / 1000f // thermal zone millidegrees
-            } else {
-                builder.bTemp = rawTemp / 10f // power_supply decidegrees
+            val raw = out[lineIndex].toFloatOrNull() ?: 0f
+            builder.bTemp = when {
+                raw == 0f -> 0f
+                raw < 150f -> raw // degrees
+                raw < 1500f -> raw / 10f // decidegrees
+                else -> raw / 1000f // millidegrees
             }
             lineIndex++
         }
