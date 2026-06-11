@@ -29,7 +29,7 @@ data class SystemStats(
 class MonitorManager {
 
     private var activeWindows: List<String> = emptyList()
-    private var lastFpsCheckFrames = LongArray(128)
+    private val lastLayerTimestamps = mutableMapOf<String, Long>()
     private var windowUpdateCounter = 0
 
     private var hardwareProvider: IHardwareProvider = MtkHardwareProvider() // default
@@ -63,7 +63,7 @@ class MonitorManager {
     private fun fetchStats(): SystemStats {
         // Update active window every 2 seconds (4 * 500ms)
         if (windowUpdateCounter++ % 4 == 0) {
-            val focusOut = Shell.cmd("dumpsys window | grep mCurrentFocus").exec().out.joinToString("")
+            val focusOut = Shell.cmd("dumpsys window displays | grep mCurrentFocus").exec().out.joinToString("")
             val regex = "Window\\{.*? (?:u\\d+ )?([^ }]+)\\}".toRegex()
             regex.find(focusOut)?.let { matchResult ->
                 val focusPkgAct = matchResult.groupValues[1]
@@ -86,6 +86,8 @@ class MonitorManager {
                 }.distinct()
                 
                 activeWindows = parsedLayers
+                // Clean up stale layers to prevent memory leaks
+                lastLayerTimestamps.keys.retainAll(activeWindows.toSet())
             }
         }
 
@@ -103,19 +105,26 @@ class MonitorManager {
         // Parse SurfaceFlinger
         var maxFps = 0
         var bestFrametime = 0f
+        var sfWindowIndex = 0
 
         while (lineIndex < out.size) {
             val refreshPeriodStr = out[lineIndex]
+            if (refreshPeriodStr == "END_SF" || lineIndex >= out.size) break
+            
             if (refreshPeriodStr == "NEXT_LAYER") {
+                sfWindowIndex++
                 lineIndex++
                 continue
             }
-            if (refreshPeriodStr == "END_SF" || lineIndex >= out.size) break
             
             val refreshPeriod = refreshPeriodStr.toLongOrNull()
             lineIndex++
             
             if (refreshPeriod != null) {
+                val currentLayer = if (sfWindowIndex < activeWindows.size) activeWindows[sfWindowIndex] else ""
+                val lastKnownTimestamp = lastLayerTimestamps[currentLayer] ?: 0L
+                var maxTimestampInThisRun = lastKnownTimestamp
+                
                 var frameCount = 0
                 var totalDuration = 0L
                 var previousTimestamp = 0L
@@ -123,7 +132,6 @@ class MonitorManager {
                 while (lineIndex < out.size) {
                     val line = out[lineIndex]
                     if (line == "NEXT_LAYER" || line == "END_SF") {
-                        lineIndex++
                         break
                     }
                     if (line.isEmpty()) {
@@ -134,23 +142,37 @@ class MonitorManager {
                     if (cols.size >= 2) {
                         val timestamp = cols[1].toLongOrNull() ?: 0L
                         if (timestamp != 0L && timestamp != Long.MAX_VALUE) {
-                            if (previousTimestamp != 0L && timestamp > previousTimestamp) {
-                                val duration = timestamp - previousTimestamp
-                                if (duration in 1..1000000000L) {
-                                    totalDuration += duration
-                                    frameCount++
+                            if (timestamp > lastKnownTimestamp) {
+                                // This is a truly new frame for this 500ms cycle!
+                                if (previousTimestamp != 0L && timestamp > previousTimestamp) {
+                                    val duration = timestamp - previousTimestamp
+                                    if (duration in 1..1000000000L) {
+                                        totalDuration += duration
+                                        frameCount++
+                                    }
+                                }
+                                if (timestamp > maxTimestampInThisRun) {
+                                    maxTimestampInThisRun = timestamp
                                 }
                             }
+                            // Always track previous timestamp (even of old frames) so the edge delta is flawless
                             previousTimestamp = timestamp
                         }
                     }
                     lineIndex++
                 }
 
-                if (frameCount > 0) {
+                // Update the tracker for next cycle
+                if (currentLayer.isNotEmpty()) {
+                    lastLayerTimestamps[currentLayer] = maxTimestampInThisRun
+                }
+
+                if (frameCount > 0 && totalDuration > 0) {
                     val avgFrametimeNs = totalDuration / frameCount
                     val currentFrametime = avgFrametimeNs / 1000000f // ms
-                    val currentFps = if (avgFrametimeNs > 0) (1000000000L / avgFrametimeNs).toInt() else 0
+                    val currentFps = (1000000000L / avgFrametimeNs).toInt()
+                    
+                    // The legendary maxFps filter logic: Naturally discards dead/static layers
                     if (currentFps > maxFps) {
                         maxFps = currentFps
                         bestFrametime = currentFrametime
@@ -160,7 +182,6 @@ class MonitorManager {
                 while (lineIndex < out.size && out[lineIndex] != "NEXT_LAYER" && out[lineIndex] != "END_SF") {
                     lineIndex++
                 }
-                if (lineIndex < out.size) lineIndex++
             }
         }
         
