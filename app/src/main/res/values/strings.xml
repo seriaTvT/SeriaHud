@@ -39,4 +39,9 @@
     <string name="setting_advanced_features">Advanced Features</string>
     <string name="setting_show_frametime_graph">Show Real-time Frametime Graph</string>
     <string name="setting_show_record_button">Show Data Record Button</string>
+
+    <string name="setting_diagnostic">Run Hardware Diagnostic</string>
+    <string name="setting_diagnostic_desc">Execute a root script to collect hardware node paths. The report will be saved to your Download folder.</string>
+    <string name="diagnostic_success">Report saved to /sdcard/Download/seriahud_diagnostic.txt</string>
+    <string name="diagnostic_timeout">Diagnostic timed out. Please check root access.</string>
 </resources>

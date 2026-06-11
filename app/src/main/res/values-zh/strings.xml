@@ -37,6 +37,11 @@
     <string name="setting_core_format">核心 %1$d</string>
     
     <string name="setting_advanced_features">高级功能</string>
-    <string name="setting_show_frametime_graph">显示实时帧生成时间(Frametime)折线图</string>
+    <string name="setting_show_frametime_graph">显示实时帧生成时间折线图</string>
     <string name="setting_show_record_button">显示数据记录悬浮按钮 (导出CSV)</string>
+
+    <string name="setting_diagnostic">生成硬件诊断报告</string>
+    <string name="setting_diagnostic_desc">执行 Root 脚本搜集底层硬件节点路径。报告将自动保存至系统 Download 文件夹。</string>
+    <string name="diagnostic_success">报告已生成至 /sdcard/Download/seriahud_diagnostic.txt</string>
+    <string name="diagnostic_timeout">硬件诊断执行超时，请检查 Root 权限授权状态。</string>
 </resources>
