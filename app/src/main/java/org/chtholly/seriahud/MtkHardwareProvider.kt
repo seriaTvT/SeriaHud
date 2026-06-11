@@ -42,7 +42,12 @@ class MtkHardwareProvider : AbstractHardwareProvider() {
     }
 
     override fun parseGpuUsage(line: String): Int {
-        return line.trim().toIntOrNull() ?: 0
+        val parts = line.trim().split("\\s+".toRegex())
+        return if (parts.isNotEmpty()) {
+            parts[0].toIntOrNull() ?: 0
+        } else {
+            0
+        }
     }
 
     override fun parseGpuFreq(line: String): Int {
