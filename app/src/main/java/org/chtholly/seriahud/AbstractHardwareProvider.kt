@@ -13,6 +13,15 @@ abstract class AbstractHardwareProvider : IHardwareProvider {
     protected var battCurrentPath = ""
     protected var battTempPath = ""
 
+    protected var currentScale: Float = 1000000f // Android standard is uA
+
+    init {
+        // Detect Oplus devices which commonly use mA instead of uA for battery current
+        val manufacturer = android.os.Build.MANUFACTURER.lowercase(java.util.Locale.US)
+        if (manufacturer.contains("oneplus") || manufacturer.contains("oppo") || manufacturer.contains("realme")) {
+            currentScale = 1000f
+        }
+    }
     override fun getCommands(): Array<String> {
         val cmds = mutableListOf<String>()
         cmds.add("cat /proc/stat | grep -w cpu")
@@ -107,13 +116,28 @@ abstract class AbstractHardwareProvider : IHardwareProvider {
 
         // Batt Voltage
         if (lineIndex < out.size) {
-            builder.bVoltage = (out[lineIndex].toFloatOrNull() ?: 0f) / 1000000f
+            val raw = out[lineIndex].toFloatOrNull() ?: 0f
+            builder.bVoltage = when {
+                raw == 0f -> 0f
+                raw < 100f -> raw // V
+                raw < 10000f -> raw / 1000f // mV
+                else -> raw / 1000000f // uV
+            }
             lineIndex++
         }
 
         // Batt Current
         if (lineIndex < out.size) {
-            builder.bCurrent = (out[lineIndex].toFloatOrNull() ?: 0f) / 1000000f
+            val raw = out[lineIndex].toFloatOrNull() ?: 0f
+            val absRaw = if (raw < 0) -raw else raw
+            
+            // 安全锁死机制：如果任何设备的电流数值超过 50000，绝对不可能还是 mA (50安培电流会起火)
+            // 此时必然是微安 (uA)，我们将比例尺永久锁死在 1000000f，防止后续休眠时数值跌落造成的重叠误判。
+            if (currentScale == 1000f && absRaw > 50000f) {
+                currentScale = 1000000f
+            }
+            
+            builder.bCurrent = if (currentScale > 0f) raw / currentScale else 0f
             lineIndex++
         }
 

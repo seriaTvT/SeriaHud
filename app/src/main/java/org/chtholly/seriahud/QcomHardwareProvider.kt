@@ -25,8 +25,8 @@ class QcomHardwareProvider : AbstractHardwareProvider() {
         val thermals = Shell.cmd("for tz in /sys/class/thermal/thermal_zone*; do echo \"\$tz \$(cat \$tz/type)\"; done").exec().out
         for (line in thermals) {
             val lower = line.lowercase()
-            if (lower.contains("cpu_therm") || lower.contains("msm_therm") || lower.contains("tsens_tz_sensor") || lower.contains("xo_therm") || lower.contains("cpullc-0-0")) {
-                if (socTempPath.isEmpty() || lower.contains("cpu_therm") || lower.contains("msm_therm") || lower.contains("tsens_tz_sensor0")) {
+            if (lower.contains("cpu_therm") || lower.contains("msm_therm") || lower.contains("tsens_tz_sensor") || lower.contains("xo_therm") || lower.contains("cpullc-0-0") || lower.contains("cpu-") || lower.contains("cpuss-")) {
+                if (socTempPath.isEmpty() || lower.contains("cpu_therm") || lower.contains("msm_therm") || lower.contains("tsens_tz_sensor0") || lower.contains("cpu-0-0-0") || lower.contains("cpuss-0")) {
                     socTempPath = line.split(" ")[0] + "/temp"
                 }
             }
