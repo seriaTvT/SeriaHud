@@ -22,14 +22,16 @@ An overlay for temperatures, CPU/GPU load, FPS, and more on Android devices.
 
 ## Key Features
 
-*   **Accurate FPS & Frametime Monitoring**: Retrieves rendering timestamps directly from SurfaceFlinger for the active window, calculating precise FPS and frametimes (ms).
+*   **Accurate FPS & Frametime Monitoring**: Retrieves rendering timestamps directly from SurfaceFlinger for the active window, calculating precise FPS and frametimes (ms) with improved per-layer tracking logic.
 *   **Dynamic Platform GPU Detection**:
     *   **Qualcomm Snapdragon**: Tracks GPU usage and frequencies from `kgsl-3d0`.
     *   **MediaTek Dimensity**: Tracks GPU usage and frequencies through `ged` drivers.
 *   **Granular CPU Core Tracking**: Displays overall CPU usage alongside frequencies of individual selected cores.
-*   **Thermal Monitoring**: Displays real-time SoC temperature and Battery temperature.
+*   **Thermal Monitoring & Battery Power**: Displays real-time SoC temperature, battery temperature, and power draw, with support for dual-cell battery compensation.
+*   **Hardware Diagnostics**: Built-in hardware detection UI to diagnose and view system capabilities.
 *   **Real-time Performance Graphs**: Shows a live 60-frame historical frametime graph to help diagnose stuttering.
-*   **CSV Performance Logging**: Easily record performance logs by tapping the record button. Logs are saved in CSV format at:
+*   **Stable Data Sampling**: Implemented data interpolation, filtering, and latching mechanisms to ensure stable readings and prevent erroneous zero-value flickering.
+*   **CSV Performance Logging & Analysis**: Easily record performance logs by tapping the record button. Logs are saved in CSV format and can be renamed or analyzed directly within the app using the built-in Chart page. Default path:
     `/Android/data/org.chtholly.seriahud/files/records/record_YYYYMMDD_HHMMSS.csv`
 
 ---
@@ -105,14 +107,16 @@ To build the debug APK from the command line, run:
 
 ## 核心功能
 
-*   **高精度 FPS 与帧时间（Frametime）**：直接从系统 SurfaceFlinger 读取活跃窗口的渲染时间戳，精准计算游戏帧率及波动（ms）。
+*   **高精度 FPS 与帧时间（Frametime）**：直接从系统 SurfaceFlinger 读取活跃窗口的渲染时间戳，计算精准 FPS 和 Frametime（ms），并改进了按图层追踪的解析逻辑。
 *   **主流 GPU 平台动态适配**：
     *   **高通骁龙 (Qualcomm)**：自动查找并监测 `kgsl-3d0` 相关的 GPU 占用率与频率。
     *   **联发科天玑 (MediaTek)**：通过内置的 `ged` 驱动参数查询 GPU 负载及频率。
 *   **细粒度 CPU 核心监测**：除了整体 CPU 占用率，还可在设置中指定监视并显示特定 CPU 核心的运行频率。
-*   **发热监控**：实时获取 SoC 温度和电池温度，守护设备散热。
+*   **发热监控与功耗**：实时获取 SoC 温度、电池温度及功耗，并支持双电芯电池功耗补偿。
+*   **硬件诊断**：内置硬件检测 UI，方便诊断和查看系统硬件功能支持情况。
 *   **实时性能折线图**：内置最近 60 帧的实时帧时间（Frametime）波动曲线，卡顿掉帧一目了然。
-*   **CSV 性能日志导出**：点击悬浮窗侧边记录按钮即可开启后台性能记录，CSV 日志保存在：
+*   **数据采样稳定性**：实现了数据插值、滤波与锁存机制，确保数据读取的稳定性，防止错误的“零值”闪烁。
+*   **CSV 性能日志记录与分析**：点击悬浮窗侧边记录按钮即可开启后台性能记录。生成的 CSV 日志可以在应用内直接重命名或通过内置的图表页面进行可视化分析。默认保存在：
     `/Android/data/org.chtholly.seriahud/files/records/record_年份日期_时间.csv`
 
 ---
