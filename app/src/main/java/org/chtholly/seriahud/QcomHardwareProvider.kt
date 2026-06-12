@@ -49,7 +49,7 @@ class QcomHardwareProvider : AbstractHardwareProvider() {
     override fun parseGpuUsage(line: String): Int {
         val trimmed = line.trim()
         if (trimmed.contains("%")) {
-            return trimmed.replace("%", "").trim().toIntOrNull() ?: 0
+            return trimmed.replace("%", "").trim().toIntOrNull() ?: -1
         } else if (trimmed.split("\\s+".toRegex()).size == 2) {
             // gpubusy format: "busy total"
             val parts = trimmed.split("\\s+".toRegex())
@@ -57,11 +57,12 @@ class QcomHardwareProvider : AbstractHardwareProvider() {
             val total = parts[1].toFloatOrNull() ?: 1f
             return if (total > 0) ((busy / total) * 100).toInt() else 0
         } else {
-            return trimmed.toIntOrNull() ?: 0
+            return trimmed.toIntOrNull() ?: -1
         }
     }
 
     override fun parseGpuFreq(line: String): Int {
-        return (line.trim().toIntOrNull() ?: 0) / 1000000
+        val raw = line.trim().toIntOrNull() ?: -1
+        return if (raw >= 0) raw / 1000000 else -1
     }
 }

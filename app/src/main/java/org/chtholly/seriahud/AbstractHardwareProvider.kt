@@ -15,6 +15,13 @@ abstract class AbstractHardwareProvider : IHardwareProvider {
 
     protected var currentScale: Float = 1000000f // Android standard is uA
 
+    protected var lastGpuUsage: Int = 0
+    protected var lastGpuFreq: Int = 0
+    protected var lastSocTemp: Float = 0f
+    protected var lastBVoltage: Float = 0f
+    protected var lastBCurrent: Float = 0f
+    protected var lastBTemp: Float = 0f
+
     init {
         // Detect Oplus devices which commonly use mA instead of uA for battery current
         val manufacturer = android.os.Build.MANUFACTURER.lowercase(java.util.Locale.US)
@@ -23,8 +30,8 @@ abstract class AbstractHardwareProvider : IHardwareProvider {
         }
     }
     private fun safeCat(path: String): String {
-        if (path.isEmpty()) return "echo 0"
-        return "val=\$(cat $path 2>/dev/null); echo \"\${val:-0}\" | head -n 1"
+        if (path.isEmpty()) return "echo \"-1\""
+        return "val=\$(cat $path 2>/dev/null); echo \"\${val:--1}\" | head -n 1"
     }
 
     override fun getCommands(): Array<String> {
@@ -97,64 +104,93 @@ abstract class AbstractHardwareProvider : IHardwareProvider {
 
         // GPU Usage
         if (lineIndex < out.size) {
-            builder.gpuUsage = parseGpuUsage(out[lineIndex])
+            val line = out[lineIndex].trim()
+            if (line != "-1" && line.isNotEmpty()) {
+                val usage = parseGpuUsage(line)
+                if (usage >= 0) lastGpuUsage = usage
+            }
+            builder.gpuUsage = lastGpuUsage
             lineIndex++
         }
 
         // GPU Freq
         if (lineIndex < out.size) {
-            builder.gpuFreq = parseGpuFreq(out[lineIndex])
+            val line = out[lineIndex].trim()
+            if (line != "-1" && line.isNotEmpty()) {
+                val freq = parseGpuFreq(line)
+                if (freq >= 0) lastGpuFreq = freq
+            }
+            builder.gpuFreq = lastGpuFreq
             lineIndex++
         }
 
         // SOC Temp
         if (lineIndex < out.size) {
-            val raw = out[lineIndex].toFloatOrNull() ?: 0f
-            builder.socTemp = when {
-                raw == 0f -> 0f
-                raw < 150f -> raw // degrees
-                raw < 1500f -> raw / 10f // decidegrees
-                else -> raw / 1000f // millidegrees
+            val line = out[lineIndex].trim()
+            if (line != "-1" && line.isNotEmpty()) {
+                val raw = line.toFloatOrNull() ?: 0f
+                if (raw != 0f) {
+                    lastSocTemp = when {
+                        raw < 150f -> raw // degrees
+                        raw < 1500f -> raw / 10f // decidegrees
+                        else -> raw / 1000f // millidegrees
+                    }
+                }
             }
+            builder.socTemp = lastSocTemp
             lineIndex++
         }
 
         // Batt Voltage
         if (lineIndex < out.size) {
-            val raw = out[lineIndex].toFloatOrNull() ?: 0f
-            builder.bVoltage = when {
-                raw == 0f -> 0f
-                raw < 100f -> raw // V
-                raw < 10000f -> raw / 1000f // mV
-                else -> raw / 1000000f // uV
+            val line = out[lineIndex].trim()
+            if (line != "-1" && line.isNotEmpty()) {
+                val raw = line.toFloatOrNull() ?: 0f
+                if (raw != 0f) {
+                    lastBVoltage = when {
+                        raw < 100f -> raw // V
+                        raw < 10000f -> raw / 1000f // mV
+                        else -> raw / 1000000f // uV
+                    }
+                }
             }
+            builder.bVoltage = lastBVoltage
             lineIndex++
         }
 
         // Batt Current
         if (lineIndex < out.size) {
-            val raw = out[lineIndex].toFloatOrNull() ?: 0f
-            val absRaw = if (raw < 0) -raw else raw
-            
-            // 安全锁死机制：如果任何设备的电流数值超过 50000，绝对不可能还是 mA (50安培电流会起火)
-            // 此时必然是微安 (uA)，我们将比例尺永久锁死在 1000000f，防止后续休眠时数值跌落造成的重叠误判。
-            if (currentScale == 1000f && absRaw > 50000f) {
-                currentScale = 1000000f
+            val line = out[lineIndex].trim()
+            if (line != "-1" && line.isNotEmpty()) {
+                val raw = line.toFloatOrNull() ?: 0f
+                if (raw != 0f) {
+                    val absRaw = if (raw < 0) -raw else raw
+                    if (currentScale == 1000f && absRaw > 50000f) {
+                        currentScale = 1000000f
+                    }
+                    lastBCurrent = if (currentScale > 0f) raw / currentScale else 0f
+                } else {
+                    lastBCurrent = 0f
+                }
             }
-            
-            builder.bCurrent = if (currentScale > 0f) raw / currentScale else 0f
+            builder.bCurrent = lastBCurrent
             lineIndex++
         }
 
         // Batt Temp
         if (lineIndex < out.size) {
-            val raw = out[lineIndex].toFloatOrNull() ?: 0f
-            builder.bTemp = when {
-                raw == 0f -> 0f
-                raw < 150f -> raw // degrees
-                raw < 1500f -> raw / 10f // decidegrees
-                else -> raw / 1000f // millidegrees
+            val line = out[lineIndex].trim()
+            if (line != "-1" && line.isNotEmpty()) {
+                val raw = line.toFloatOrNull() ?: 0f
+                if (raw != 0f) {
+                    lastBTemp = when {
+                        raw < 150f -> raw // degrees
+                        raw < 1500f -> raw / 10f // decidegrees
+                        else -> raw / 1000f // millidegrees
+                    }
+                }
             }
+            builder.bTemp = lastBTemp
             lineIndex++
         }
 
