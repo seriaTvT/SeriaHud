@@ -46,7 +46,7 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
     private lateinit var composeView: ComposeView
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
     
-    private val monitorManager = MonitorManager()
+    private lateinit var monitorManager: MonitorManager
     private lateinit var dataRecorder: DataRecorder
     private lateinit var configManager: HudConfigManager
     
@@ -64,6 +64,7 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
         
         dataRecorder = DataRecorder(this)
         configManager = HudConfigManager(this)
+        monitorManager = MonitorManager(configManager)
         
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         

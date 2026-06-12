@@ -99,6 +99,10 @@ fun SettingsScreen(configManager: HudConfigManager) {
         SwitchSetting(stringResource(R.string.setting_show_record_button), config.showRecordButton) {
             configManager.updateConfig(config.copy(showRecordButton = it))
         }
+        
+        SwitchSetting(stringResource(R.string.setting_double_battery_power), config.doubleBatteryPower) {
+            configManager.updateConfig(config.copy(doubleBatteryPower = it))
+        }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 

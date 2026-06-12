@@ -26,7 +26,7 @@ data class SystemStats(
     val frametime: Float = 0f
 )
 
-class MonitorManager {
+class MonitorManager(private val configManager: HudConfigManager) {
 
     private var activeWindows: List<String> = emptyList()
     private val lastLayerTimestamps = mutableMapOf<String, Long>()
@@ -185,6 +185,15 @@ class MonitorManager {
             }
         }
         
-        return builder.build(fps = maxFps, frametime = bestFrametime)
+        val stats = builder.build(fps = maxFps, frametime = bestFrametime)
+        val config = configManager.configFlow.value
+        return if (config.doubleBatteryPower) {
+            stats.copy(
+                batteryPower = stats.batteryPower * 2f,
+                batteryCurrent = stats.batteryCurrent * 2f
+            )
+        } else {
+            stats
+        }
     }
 }

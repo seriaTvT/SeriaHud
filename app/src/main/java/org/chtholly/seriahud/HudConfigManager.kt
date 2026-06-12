@@ -17,7 +17,8 @@ data class HudConfig(
     val showBattery: Boolean = true,
     val showFps: Boolean = true,
     val showFrametimeGraph: Boolean = true,
-    val showRecordButton: Boolean = true
+    val showRecordButton: Boolean = true,
+    val doubleBatteryPower: Boolean = false
 )
 
 class HudConfigManager(context: Context) {
@@ -48,7 +49,8 @@ class HudConfigManager(context: Context) {
             showBattery = prefs.getBoolean("showBattery", true),
             showFps = prefs.getBoolean("showFps", true),
             showFrametimeGraph = prefs.getBoolean("showFrametimeGraph", true),
-            showRecordButton = prefs.getBoolean("showRecordButton", true)
+            showRecordButton = prefs.getBoolean("showRecordButton", true),
+            doubleBatteryPower = prefs.getBoolean("doubleBatteryPower", false)
         )
     }
 
@@ -64,6 +66,7 @@ class HudConfigManager(context: Context) {
             putBoolean("showFps", config.showFps)
             putBoolean("showFrametimeGraph", config.showFrametimeGraph)
             putBoolean("showRecordButton", config.showRecordButton)
+            putBoolean("doubleBatteryPower", config.doubleBatteryPower)
         }.apply()
         
         _configFlow.value = config
