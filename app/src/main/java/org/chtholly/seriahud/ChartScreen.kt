@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.LineChart
@@ -135,14 +136,14 @@ fun ChartScreen(file: File, onBack: () -> Unit) {
                         displayRows = allRows.subList(startIdx, endIdx + 1)
                     }
                 }) {
-                    Text("确定")
+                    Text(stringResource(R.string.btn_confirm))
                 }
             }
             
             val startIndex = (sliderPosition.start * (allRows.size - 1)).roundToInt().coerceIn(0, allRows.size - 1)
             val endIndex = (sliderPosition.endInclusive * (allRows.size - 1)).roundToInt().coerceIn(0, allRows.size - 1)
             Text(
-                "Selected: ${allRows[startIndex].timeStr} - ${allRows[endIndex].timeStr} (${endIndex - startIndex} points)",
+                stringResource(R.string.chart_selected_range, allRows[startIndex].timeStr, allRows[endIndex].timeStr, endIndex - startIndex),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -156,15 +157,20 @@ fun ChartScreen(file: File, onBack: () -> Unit) {
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                MpChartCard("FPS over Time", displayRows) { row, i -> listOf(Entry(i, row.fps)) }
+                MpChartCard(stringResource(R.string.chart_fps_over_time), displayRows) { row, i -> listOf(Entry(i, row.fps)) }
 
-                MpChartCardMulti("CPU and GPU Usage (%)", displayRows) { row, i -> 
+                MpChartCardMulti(
+                    title = stringResource(R.string.chart_cpu_gpu_usage),
+                    label1 = stringResource(R.string.chart_cpu_usage_pct),
+                    label2 = stringResource(R.string.chart_gpu_usage_pct),
+                    rows = displayRows
+                ) { row, i -> 
                     Pair(Entry(i, row.cpuUsage), Entry(i, row.gpuUsage))
                 }
 
-                MpChartCard("SoC Temperature (°C)", displayRows) { row, i -> listOf(Entry(i, row.socTemp)) }
+                MpChartCard(stringResource(R.string.chart_soc_temp), displayRows) { row, i -> listOf(Entry(i, row.socTemp)) }
 
-                MpChartCard("Battery Power (W)", displayRows) { row, i -> listOf(Entry(i, row.batteryPower)) }
+                MpChartCard(stringResource(R.string.chart_battery_power), displayRows) { row, i -> listOf(Entry(i, row.batteryPower)) }
             }
         }
     }
@@ -213,7 +219,7 @@ fun MpChartCard(title: String, rows: List<CsvRow>, extractor: (CsvRow, Float) ->
 }
 
 @Composable
-fun MpChartCardMulti(title: String, rows: List<CsvRow>, extractor: (CsvRow, Float) -> Pair<Entry, Entry>) {
+fun MpChartCardMulti(title: String, label1: String, label2: String, rows: List<CsvRow>, extractor: (CsvRow, Float) -> Pair<Entry, Entry>) {
     val color1 = android.graphics.Color.parseColor("#4CAF50") // Green
     val color2 = android.graphics.Color.parseColor("#9C27B0") // Purple
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
@@ -244,13 +250,13 @@ fun MpChartCardMulti(title: String, rows: List<CsvRow>, extractor: (CsvRow, Floa
                     val entries1 = pairs.map { it.first }
                     val entries2 = pairs.map { it.second }
 
-                    val set1 = LineDataSet(entries1, "CPU Usage (%)").apply {
+                    val set1 = LineDataSet(entries1, label1).apply {
                         color = color1
                         setDrawCircles(false)
                         setDrawValues(false)
                         lineWidth = 1.5f
                     }
-                    val set2 = LineDataSet(entries2, "GPU Usage (%)").apply {
+                    val set2 = LineDataSet(entries2, label2).apply {
                         color = color2
                         setDrawCircles(false)
                         setDrawValues(false)

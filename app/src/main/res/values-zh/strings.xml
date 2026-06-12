@@ -46,4 +46,13 @@
     <string name="setting_diagnostic_desc">执行 Root 脚本搜集底层硬件节点路径。报告将自动保存至系统 Download 文件夹。</string>
     <string name="diagnostic_success">报告已生成至 /sdcard/Download/seriahud_diagnostic.txt</string>
     <string name="diagnostic_timeout">硬件诊断执行超时，请检查 Root 权限授权状态。</string>
+
+    <string name="btn_confirm">确定</string>
+    <string name="chart_selected_range">已选区间: %1$s - %2$s (共 %3$d 个数据点)</string>
+    <string name="chart_fps_over_time">FPS 变化折线图</string>
+    <string name="chart_cpu_gpu_usage">CPU 与 GPU 占用率 (%)</string>
+    <string name="chart_soc_temp">SoC 核心温度 (°C)</string>
+    <string name="chart_battery_power">电池耗电功率 (W)</string>
+    <string name="chart_cpu_usage_pct">CPU 占用率 (%)</string>
+    <string name="chart_gpu_usage_pct">GPU 占用率 (%)</string>
 </resources>

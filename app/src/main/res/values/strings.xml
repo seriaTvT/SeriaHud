@@ -46,4 +46,13 @@
     <string name="setting_diagnostic_desc">Execute a root script to collect hardware node paths. The report will be saved to your Download folder.</string>
     <string name="diagnostic_success">Report saved to /sdcard/Download/seriahud_diagnostic.txt</string>
     <string name="diagnostic_timeout">Diagnostic timed out. Please check root access.</string>
+
+    <string name="btn_confirm">Confirm</string>
+    <string name="chart_selected_range">Selected: %1$s - %2$s (%3$d points)</string>
+    <string name="chart_fps_over_time">FPS over Time</string>
+    <string name="chart_cpu_gpu_usage">CPU and GPU Usage (%)</string>
+    <string name="chart_soc_temp">SoC Temperature (°C)</string>
+    <string name="chart_battery_power">Battery Power (W)</string>
+    <string name="chart_cpu_usage_pct">CPU Usage (%)</string>
+    <string name="chart_gpu_usage_pct">GPU Usage (%)</string>
 </resources>
