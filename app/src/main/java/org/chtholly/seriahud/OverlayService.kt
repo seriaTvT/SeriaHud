@@ -93,6 +93,7 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
             
             setContent {
                 var stats by remember { mutableStateOf(SystemStats()) }
+                var visualGpuUsage by remember { mutableIntStateOf(0) }
                 val config by configManager.configFlow.collectAsState()
                 
                 var frametimeHistory by remember { mutableStateOf(emptyList<Float>()) }
@@ -101,6 +102,10 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
                 LaunchedEffect(Unit) {
                     monitorManager.getStatsFlow().collectLatest {
                         stats = it
+                        if (!(it.gpuUsage == 0 && it.gpuFreq > 300)) {
+                            visualGpuUsage = it.gpuUsage
+                        }
+                        
                         if (config.showFrametimeGraph) {
                             frametimeHistory = (frametimeHistory + it.frametime).takeLast(60)
                         }
@@ -125,6 +130,7 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
                 
                 OverlayUI(
                     stats = stats,
+                    visualGpuUsage = visualGpuUsage,
                     config = config,
                     frametimeHistory = frametimeHistory,
                     isRecording = isRecording,
@@ -162,6 +168,7 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
 @Composable
 fun OverlayUI(
     stats: SystemStats, 
+    visualGpuUsage: Int,
     config: HudConfig,
     frametimeHistory: List<Float>,
     isRecording: Boolean,
@@ -224,7 +231,7 @@ fun OverlayUI(
         if (config.showGpu) {
             Row {
                 Text("GPU  ", style = textStyle, color = Color(0xFF98C379))
-                Text(String.format("%3d%% ", stats.gpuUsage), style = textStyle)
+                Text(String.format("%3d%% ", visualGpuUsage), style = textStyle)
                 Text(String.format("%4d MHz", stats.gpuFreq), style = textStyle)
             }
             Spacer(modifier = Modifier.height(4.dp))

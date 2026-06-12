@@ -16,7 +16,6 @@ abstract class AbstractHardwareProvider : IHardwareProvider {
     protected var currentScale: Float = 1000000f // Android standard is uA
 
     protected var lastGpuUsage: Int = 0
-    protected var zeroGpuUsageCounter: Int = 0
     protected var lastGpuFreq: Int = 0
     protected var lastSocTemp: Float = 0f
     protected var lastBVoltage: Float = 0f
@@ -108,14 +107,8 @@ abstract class AbstractHardwareProvider : IHardwareProvider {
             val line = out[lineIndex].trim()
             if (line != "-1" && line.isNotEmpty()) {
                 val usage = parseGpuUsage(line)
-                if (usage > 0) {
+                if (usage >= 0) {
                     lastGpuUsage = usage
-                    zeroGpuUsageCounter = 0
-                } else if (usage == 0) {
-                    zeroGpuUsageCounter++
-                    if (zeroGpuUsageCounter >= 2) {
-                        lastGpuUsage = 0
-                    }
                 }
             }
             builder.gpuUsage = lastGpuUsage

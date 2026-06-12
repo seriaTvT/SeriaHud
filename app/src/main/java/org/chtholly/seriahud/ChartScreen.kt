@@ -59,6 +59,36 @@ fun parseCsv(file: File): List<CsvRow> {
             }
         }
     }
+    // Post-processing to filter fake GPU Usage zeros
+    for (i in rows.indices) {
+        val row = rows[i]
+        if (row.gpuUsage == 0f && row.gpuFreq > 300f) {
+            var prevUsage = 0f
+            for (j in i - 1 downTo 0) {
+                if (!(rows[j].gpuUsage == 0f && rows[j].gpuFreq > 300f)) {
+                    prevUsage = rows[j].gpuUsage
+                    break
+                }
+            }
+            var nextUsage = 0f
+            for (j in i + 1 until rows.size) {
+                if (!(rows[j].gpuUsage == 0f && rows[j].gpuFreq > 300f)) {
+                    nextUsage = rows[j].gpuUsage
+                    break
+                }
+            }
+            
+            val interpolated = if (nextUsage != 0f && prevUsage != 0f) {
+                (prevUsage + nextUsage) / 2f
+            } else if (prevUsage != 0f) {
+                prevUsage
+            } else {
+                nextUsage
+            }
+            
+            rows[i] = row.copy(gpuUsage = interpolated)
+        }
+    }
     return rows
 }
 
