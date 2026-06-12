@@ -22,16 +22,21 @@ abstract class AbstractHardwareProvider : IHardwareProvider {
             currentScale = 1000f
         }
     }
+    private fun safeCat(path: String): String {
+        if (path.isEmpty()) return "echo 0"
+        return "val=\$(cat $path 2>/dev/null); echo \"\${val:-0}\" | head -n 1"
+    }
+
     override fun getCommands(): Array<String> {
         val cmds = mutableListOf<String>()
-        cmds.add("cat /proc/stat | grep -w cpu")
-        cmds.addAll(cpuPaths.map { "cat $it 2>/dev/null || echo 0" })
-        cmds.add(if (gpuUsagePath.isNotEmpty()) "cat $gpuUsagePath 2>/dev/null || echo 0" else "echo 0")
-        cmds.add(if (gpuFreqPath.isNotEmpty()) "cat $gpuFreqPath 2>/dev/null || echo 0" else "echo 0")
-        cmds.add(if (socTempPath.isNotEmpty()) "cat $socTempPath 2>/dev/null || echo 0" else "echo 0")
-        cmds.add(if (battVoltagePath.isNotEmpty()) "cat $battVoltagePath 2>/dev/null || echo 0" else "echo 0")
-        cmds.add(if (battCurrentPath.isNotEmpty()) "cat $battCurrentPath 2>/dev/null || echo 0" else "echo 0")
-        cmds.add(if (battTempPath.isNotEmpty()) "cat $battTempPath 2>/dev/null || echo 0" else "echo 0")
+        cmds.add("val=\$(cat /proc/stat 2>/dev/null | grep -w '^cpu ' | head -n 1); echo \"\${val:-cpu 0 0 0 0 0 0 0}\"")
+        cmds.addAll(cpuPaths.map { safeCat(it) })
+        cmds.add(safeCat(gpuUsagePath))
+        cmds.add(safeCat(gpuFreqPath))
+        cmds.add(safeCat(socTempPath))
+        cmds.add(safeCat(battVoltagePath))
+        cmds.add(safeCat(battCurrentPath))
+        cmds.add(safeCat(battTempPath))
         cmds.add("cat /proc/meminfo | head -n 3")
         return cmds.toTypedArray()
     }
