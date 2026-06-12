@@ -3,6 +3,7 @@
     <string name="app_name">SeriaHud</string>
     <string name="title_home">主页</string>
     <string name="title_settings">设置</string>
+    <string name="title_records">数据记录</string>
     
     <string name="btn_start_monitor">启动监控</string>
     <string name="btn_stop_monitor">停止监控</string>

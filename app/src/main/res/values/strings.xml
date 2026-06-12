@@ -3,6 +3,7 @@
     <string name="app_name">SeriaHud</string>
     <string name="title_home">Home</string>
     <string name="title_settings">Settings</string>
+    <string name="title_records">Records</string>
     
     <string name="btn_start_monitor">Start Monitor</string>
     <string name="btn_stop_monitor">Stop Monitor</string>

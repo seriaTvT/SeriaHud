@@ -112,4 +112,7 @@ dependencies {
 
 dependencies {
     implementation("androidx.compose.material:material-icons-core")
+    
+    // MPAndroidChart
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

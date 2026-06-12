@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -61,10 +62,16 @@ class MainActivity : ComponentActivity() {
                                 onClick = { selectedTab = 0 }
                             )
                             NavigationBarItem(
-                                icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                                label = { Text(stringResource(R.string.title_settings)) },
+                                icon = { Icon(Icons.Default.List, contentDescription = "Records") },
+                                label = { Text(stringResource(R.string.title_records)) },
                                 selected = selectedTab == 1,
                                 onClick = { selectedTab = 1 }
+                            )
+                            NavigationBarItem(
+                                icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                                label = { Text(stringResource(R.string.title_settings)) },
+                                selected = selectedTab == 2,
+                                onClick = { selectedTab = 2 }
                             )
                         }
                     }
@@ -72,6 +79,8 @@ class MainActivity : ComponentActivity() {
                     Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
                         if (selectedTab == 0) {
                             HomeScreen()
+                        } else if (selectedTab == 1) {
+                            RecordsScreen()
                         } else {
                             SettingsScreen(configManager)
                         }
