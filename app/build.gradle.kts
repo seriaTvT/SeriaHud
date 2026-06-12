@@ -115,4 +115,7 @@ dependencies {
     
     // MPAndroidChart
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    // Coil for background images
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }

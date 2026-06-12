@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import org.chtholly.seriahud.theme.getCardColors
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -147,7 +148,7 @@ fun MpChartCard(title: String, rows: List<CsvRow>, extractor: (CsvRow, Float) ->
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth().height(250.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        colors = getCardColors()
     ) {
         Column(modifier = Modifier.padding(12.dp).fillMaxSize()) {
             Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
@@ -190,7 +191,7 @@ fun MpChartCardMulti(title: String, rows: List<CsvRow>, extractor: (CsvRow, Floa
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth().height(250.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        colors = getCardColors()
     ) {
         Column(modifier = Modifier.padding(12.dp).fillMaxSize()) {
             Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)

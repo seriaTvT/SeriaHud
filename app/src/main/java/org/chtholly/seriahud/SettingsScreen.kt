@@ -17,6 +17,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Intent
+import android.net.Uri
+import org.chtholly.seriahud.theme.AppearanceConfig
+import kotlin.math.roundToInt
 
 @Composable
 fun SettingsScreen(configManager: HudConfigManager) {
@@ -98,6 +104,66 @@ fun SettingsScreen(configManager: HudConfigManager) {
         
         SwitchSetting(stringResource(R.string.setting_show_record_button), config.showRecordButton) {
             configManager.updateConfig(config.copy(showRecordButton = it))
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        Text(stringResource(R.string.setting_appearance_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+        
+        val contentResolver = context.contentResolver
+        val pickImageLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument()
+        ) { uri: Uri? ->
+            if (uri != null) {
+                try {
+                    contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    AppearanceConfig.updateBackgroundUri(uri.toString())
+                    AppearanceConfig.save(context)
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Failed to grant URI permission", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.setting_pick_background), style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.setting_pick_background_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(onClick = { pickImageLauncher.launch(arrayOf("image/*")) }) {
+                Text("Select")
+            }
+        }
+
+        if (AppearanceConfig.backgroundImageUri != null) {
+            Button(
+                onClick = { 
+                    AppearanceConfig.updateBackgroundUri(null)
+                    AppearanceConfig.save(context)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) {
+                Text(stringResource(R.string.setting_clear_background))
+            }
+        }
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(stringResource(R.string.setting_card_alpha), style = MaterialTheme.typography.bodyLarge)
+                Text("${(AppearanceConfig.cardAlpha * 100).roundToInt()}%")
+            }
+            Slider(
+                value = AppearanceConfig.cardAlpha,
+                onValueChange = { AppearanceConfig.updateAlpha(it) },
+                onValueChangeFinished = { AppearanceConfig.save(context) },
+                valueRange = 0f..1f
+            )
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))

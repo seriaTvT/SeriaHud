@@ -10,12 +10,12 @@
     <string name="btn_start_record">开始记录</string>
     <string name="btn_stop_record">停止记录</string>
     
-    <string name="card_system_info_title">系统信息</string>
+    <string name="card_system_info_title">系统架构信息</string>
     <string name="sys_model">设备型号</string>
-    <string name="sys_soc">处理器</string>
-    <string name="sys_ram">运行内存</string>
+    <string name="sys_soc">处理器平台</string>
+    <string name="sys_ram">物理内存 (RAM)</string>
     
-    <string name="card_paths_title">高级: 硬件节点路径</string>
+    <string name="card_paths_title">高级特性: 硬件节点探针</string>
     
     <string name="overlay_cpu">CPU</string>
     <string name="overlay_gpu">GPU</string>
@@ -37,12 +37,18 @@
     <string name="setting_select_cores">选择要在悬浮窗展示的核心:</string>
     <string name="setting_core_format">核心 %1$d</string>
     
-    <string name="setting_advanced_features">高级功能</string>
-    <string name="setting_show_frametime_graph">显示实时帧生成时间折线图</string>
-    <string name="setting_show_record_button">显示数据记录悬浮按钮 (导出CSV)</string>
+    <string name="setting_advanced_features">进阶监控特性</string>
+    <string name="setting_show_frametime_graph">显示 Frametime (帧生成时间) 实时曲线图</string>
+    <string name="setting_show_record_button">启用性能数据录制悬浮控件 (支持导出 CSV)</string>
 
-    <string name="setting_diagnostic">生成硬件诊断报告</string>
-    <string name="setting_diagnostic_desc">执行 Root 脚本搜集底层硬件节点路径。报告将自动保存至系统 Download 文件夹。</string>
-    <string name="diagnostic_success">报告已生成至 /sdcard/Download/seriahud_diagnostic.txt</string>
-    <string name="diagnostic_timeout">硬件诊断执行超时，请检查 Root 权限授权状态。</string>
+    <string name="setting_diagnostic">生成硬件探针诊断报告</string>
+    <string name="setting_diagnostic_desc">自动执行底层探针脚本搜集硬件节点路径。测试报告将保存至系统的 Download 目录。</string>
+    <string name="diagnostic_success">探针报告已生成至 /sdcard/Download/seriahud_diagnostic.txt</string>
+    <string name="diagnostic_timeout">硬件探针执行超时，请检查是否已授予 Root 权限。</string>
+
+    <string name="setting_appearance_title">外观与个性化</string>
+    <string name="setting_pick_background">选择自定义背景图</string>
+    <string name="setting_pick_background_desc">从相册中挑选一张高质量图片作为全局视觉底图。</string>
+    <string name="setting_clear_background">清除背景</string>
+    <string name="setting_card_alpha">卡片毛玻璃透明度</string>
 </resources>

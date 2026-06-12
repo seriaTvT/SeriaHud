@@ -30,6 +30,12 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.chtholly.seriahud.theme.SeriaHudTheme
+import org.chtholly.seriahud.theme.AppearanceConfig
+import org.chtholly.seriahud.theme.getCardColors
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
 import java.io.BufferedReader
 import java.io.FileReader
 
@@ -41,6 +47,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         configManager = HudConfigManager(this)
+        AppearanceConfig.load(this)
         enableEdgeToEdge()
 
         setContent {
@@ -77,6 +84,16 @@ class MainActivity : ComponentActivity() {
                     }
                 ) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                        AppearanceConfig.backgroundImageUri?.let { uri ->
+                            AsyncImage(
+                                model = uri,
+                                contentDescription = "Background Image",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.25f)))
+                        }
+                        
                         if (selectedTab == 0) {
                             HomeScreen()
                         } else if (selectedTab == 1) {
@@ -116,9 +133,7 @@ class MainActivity : ComponentActivity() {
             item {
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.elevatedCardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                    colors = getCardColors()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
@@ -139,8 +154,9 @@ class MainActivity : ComponentActivity() {
             }
 
             item {
-                OutlinedCard(
+                ElevatedCard(
                     modifier = Modifier.fillMaxWidth().clickable { isPathsExpanded = !isPathsExpanded },
+                    colors = getCardColors()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(

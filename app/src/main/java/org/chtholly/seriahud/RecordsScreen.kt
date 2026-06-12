@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import org.chtholly.seriahud.theme.getCardColors
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -65,9 +66,7 @@ fun RecordsScreen() {
                         onClick = { selectedFileForChart = file },
                         onLongClick = { showMenu = true }
                     ),
-                colors = CardDefaults.elevatedCardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                colors = getCardColors()
             ) {
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Row(

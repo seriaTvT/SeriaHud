@@ -45,4 +45,10 @@
     <string name="setting_diagnostic_desc">Execute a root script to collect hardware node paths. The report will be saved to your Download folder.</string>
     <string name="diagnostic_success">Report saved to /sdcard/Download/seriahud_diagnostic.txt</string>
     <string name="diagnostic_timeout">Diagnostic timed out. Please check root access.</string>
+
+    <string name="setting_appearance_title">Appearance &amp; Personalization</string>
+    <string name="setting_pick_background">Choose Custom Background</string>
+    <string name="setting_pick_background_desc">Select an image from your gallery to use as the app background.</string>
+    <string name="setting_clear_background">Clear Background</string>
+    <string name="setting_card_alpha">Card Transparency</string>
 </resources>
