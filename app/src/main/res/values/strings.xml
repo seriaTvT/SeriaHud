@@ -55,4 +55,17 @@
     <string name="chart_battery_power">Battery Power (W)</string>
     <string name="chart_cpu_usage_pct">CPU Usage (%)</string>
     <string name="chart_gpu_usage_pct">GPU Usage (%)</string>
+
+    <string name="records_no_records">No records found</string>
+    <string name="records_export">Export to Downloads</string>
+    <string name="records_exported">Exported to Downloads</string>
+    <string name="records_export_failed">Export failed</string>
+    <string name="records_delete">Delete</string>
+    <string name="records_deleted">Deleted</string>
+    <string name="records_rename">Rename</string>
+    <string name="records_renamed">Renamed successfully</string>
+    <string name="records_rename_failed">Rename failed</string>
+    <string name="records_rename_title">Rename File</string>
+    <string name="records_rename_hint">New file name</string>
+    <string name="btn_cancel">Cancel</string>
 </resources>
