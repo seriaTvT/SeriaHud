@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                         InfoRow(stringResource(R.string.sys_model), Build.MODEL)
-                        val soc = Shell.cmd("getprop ro.soc.model").exec().out.firstOrNull() ?: Build.HARDWARE
+                        val soc = Shell.cmd("getprop ro.soc.model").exec().out.firstOrNull()?.trim()?.takeIf { it.isNotEmpty() } ?: Build.HARDWARE
                         InfoRow(stringResource(R.string.sys_soc), soc)
                         val memInfo = ActivityManager.MemoryInfo()
                         (getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager).getMemoryInfo(memInfo)
