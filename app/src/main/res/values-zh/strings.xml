@@ -58,6 +58,7 @@
     <string name="pos_bottom_left">左下</string>
     <string name="pos_bottom_right">右下</string>
     <string name="setting_overlay_compact">紧凑布局 (合并到同一行)</string>
+    <string name="setting_restore_defaults">恢复默认设置</string>
 
     <string name="setting_diagnostic">生成硬件诊断报告</string>
     <string name="setting_diagnostic_desc">执行 Root 脚本搜集底层硬件节点路径。报告将自动保存至系统 Download 文件夹。</string>

@@ -192,6 +192,29 @@ fun SettingsScreen(configManager: HudConfigManager) {
                         }
                     }
                 }
+
+                // Reset only the overlay-appearance fields to their HudConfig
+                // defaults, leaving display toggles and core selection alone.
+                OutlinedButton(
+                    onClick = {
+                        val defaults = HudConfig()
+                        configManager.updateConfig(
+                            config.copy(
+                                overlayOpacity = defaults.overlayOpacity,
+                                accentPresetIndex = defaults.accentPresetIndex,
+                                cornerRadiusDp = defaults.cornerRadiusDp,
+                                fontScale = defaults.fontScale,
+                                compactMetrics = defaults.compactMetrics,
+                                positionPreset = defaults.positionPreset,
+                                overlayX = defaults.overlayX,
+                                overlayY = defaults.overlayY
+                            )
+                        )
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text(stringResource(R.string.setting_restore_defaults))
+                }
             }
         }
 

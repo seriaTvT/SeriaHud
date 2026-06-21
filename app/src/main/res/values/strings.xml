@@ -58,6 +58,7 @@
     <string name="pos_bottom_left">Bottom Left</string>
     <string name="pos_bottom_right">Bottom Right</string>
     <string name="setting_overlay_compact">Compact Metrics (share lines)</string>
+    <string name="setting_restore_defaults">Restore Defaults</string>
 
     <string name="setting_diagnostic">Run Hardware Diagnostic</string>
     <string name="setting_diagnostic_desc">Execute a root script to collect hardware node paths. The report will be saved to your Download folder.</string>
