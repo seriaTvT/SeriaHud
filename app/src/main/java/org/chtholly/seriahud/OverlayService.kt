@@ -37,6 +37,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import org.chtholly.seriahud.theme.HudPalette
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
@@ -177,10 +178,11 @@ fun OverlayUI(
     onToggleRecord: () -> Unit,
     onDrag: (Float, Float) -> Unit
 ) {
+    val palette = HudPalette.Default
     Column(
         modifier = Modifier
             .width(IntrinsicSize.Max)
-            .background(Color(0xAA000000), RoundedCornerShape(8.dp))
+            .background(palette.background, RoundedCornerShape(8.dp))
             .padding(12.dp)
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
@@ -191,7 +193,7 @@ fun OverlayUI(
     ) {
         val textStyle = MaterialTheme.typography.bodySmall.copy(
             fontFamily = FontFamily.Monospace,
-            color = Color.White,
+            color = palette.text,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold
         )
@@ -204,7 +206,7 @@ fun OverlayUI(
             // FPS
             if (config.showFps) {
                 Row {
-                    Text("FPS  ", style = textStyle, color = Color(0xFFE5C07B))
+                    Text("FPS  ", style = textStyle, color = palette.fps)
                     Text(String.format("%3d ", stats.fps), style = textStyle)
                     Text(String.format("%5.1f ms", stats.frametime), style = textStyle)
                 }
@@ -231,7 +233,7 @@ fun OverlayUI(
         // GPU
         if (config.showGpu) {
             Row {
-                Text("GPU  ", style = textStyle, color = Color(0xFF98C379))
+                Text("GPU  ", style = textStyle, color = palette.gpu)
                 Text(String.format("%3d%% ", visualGpuUsage), style = textStyle)
                 Text(String.format("%4d MHz", stats.gpuFreq), style = textStyle)
             }
@@ -241,7 +243,7 @@ fun OverlayUI(
         // CPU Overall
         if (config.showCpuOverall) {
             Row {
-                Text("CPU  ", style = textStyle, color = Color(0xFF61AFEF))
+                Text("CPU  ", style = textStyle, color = palette.cpu)
                 Text(String.format("%3.0f%% ", stats.cpuUsage), style = textStyle)
                 if (config.showSocTemp) {
                     Text(String.format("%2.0f°C", stats.socTemp), style = textStyle)
@@ -255,7 +257,7 @@ fun OverlayUI(
             config.selectedCpuCores.forEach { coreId ->
                 if (coreId < stats.cpuFrequencies.size) {
                     Row {
-                        Text("CPU$coreId ", style = textStyle, color = Color(0xFF56B6C2))
+                        Text("CPU$coreId ", style = textStyle, color = palette.cpuCore)
                         Text(String.format("%4d MHz", stats.cpuFrequencies[coreId]), style = textStyle)
                     }
                     Spacer(modifier = Modifier.height(2.dp))
@@ -267,7 +269,7 @@ fun OverlayUI(
         // RAM
         if (config.showRam) {
             Row {
-                Text("RAM  ", style = textStyle, color = Color(0xFFC678DD))
+                Text("RAM  ", style = textStyle, color = palette.ram)
                 Text(String.format("%3.0f%% ", stats.ramUsage), style = textStyle)
                 Text(String.format("%.1f/%.1f GB", stats.ramUsedGB, stats.ramTotalGB), style = textStyle)
             }
@@ -277,7 +279,7 @@ fun OverlayUI(
         // BAT
         if (config.showBattery) {
             Row {
-                Text("BAT  ", style = textStyle, color = Color(0xFFD19A66))
+                Text("BAT  ", style = textStyle, color = palette.battery)
                 Text(String.format("%4.1f W ", stats.batteryPower), style = textStyle)
                 Text(String.format("%.1f°C", stats.batteryTemp), style = textStyle)
             }
@@ -287,21 +289,21 @@ fun OverlayUI(
         // Frametime Graph
         if (config.showFrametimeGraph && frametimeHistory.isNotEmpty()) {
             Spacer(modifier = Modifier.height(4.dp))
-            FrametimeGraph(frametimeHistory, textStyle)
+            FrametimeGraph(frametimeHistory, textStyle, palette)
         }
     }
 }
 
 @Composable
-fun FrametimeGraph(history: List<Float>, textStyle: androidx.compose.ui.text.TextStyle) {
-    val graphColor = Color(0xFFE5C07B)
+fun FrametimeGraph(history: List<Float>, textStyle: androidx.compose.ui.text.TextStyle, palette: HudPalette) {
+    val graphColor = palette.graphLine
     val maxFt = (history.maxOrNull() ?: 16.6f).coerceAtLeast(16.6f)
-    
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(40.dp)
-            .background(Color(0x33FFFFFF), RoundedCornerShape(4.dp))
+            .background(palette.graphBackground, RoundedCornerShape(4.dp))
             .padding(2.dp)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {

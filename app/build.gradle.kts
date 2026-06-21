@@ -103,6 +103,9 @@ dependencies {
   implementation(libs.androidx.navigation3.runtime)
   implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 
+  // MaterialKolor — generates a full M3 color scheme from a single seed color
+  implementation(libs.material.kolor)
+
   // libsu
   implementation("com.github.topjohnwu.libsu:core:5.2.2")
 

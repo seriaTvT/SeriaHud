@@ -2,10 +2,8 @@ package org.chtholly.seriahud.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
-
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Brand seed color. The full M3 tonal palette (primary, secondary, tertiary,
+// surfaces, etc.) is generated from this single hue by MaterialKolor in
+// Theme.kt — see rememberDynamicColorScheme. Pastel rose-pink for a soft,
+// "cute" yet fresh look. Change this one value to re-theme the whole app.
+val SeedColor = Color(0xFFFF8FAB)
