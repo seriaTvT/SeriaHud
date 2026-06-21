@@ -1,15 +1,22 @@
 package org.chtholly.seriahud
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.os.Environment
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -20,6 +27,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 data class CsvRow(
@@ -93,6 +101,42 @@ fun parseCsv(file: File): List<CsvRow> {
     return rows
 }
 
+data class FpsStats(
+    val min: Float,
+    val max: Float,
+    val avg: Float,
+    val onePercentLow: Float
+)
+
+// 1% low here is the average of the lowest 1% of *sampled* FPS readings (the CSV
+// has one row per ~500ms sample, not one per rendered frame), so it approximates
+// rather than equals a frame-accurate 1% low. Surfaced with a note in the UI.
+fun computeFpsStats(rows: List<CsvRow>): FpsStats {
+    if (rows.isEmpty()) return FpsStats(0f, 0f, 0f, 0f)
+    val sorted = rows.map { it.fps }.sorted()
+    val onePercentCount = max(1, sorted.size / 100)
+    val onePercentLow = sorted.take(onePercentCount).average().toFloat()
+    return FpsStats(
+        min = sorted.first(),
+        max = sorted.last(),
+        avg = sorted.average().toFloat(),
+        onePercentLow = onePercentLow
+    )
+}
+
+private fun exportChartImage(context: Context, chart: LineChart?) {
+    if (chart == null) return
+    try {
+        val bitmap = chart.chartBitmap
+        val downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val dest = File(downloads, "seriahud_chart_${System.currentTimeMillis()}.png")
+        dest.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        Toast.makeText(context, context.getString(R.string.chart_export_success), Toast.LENGTH_SHORT).show()
+    } catch (e: Exception) {
+        Toast.makeText(context, context.getString(R.string.chart_export_failed), Toast.LENGTH_SHORT).show()
+    }
+}
+
 @Composable
 fun ChartScreen(file: File, onBack: () -> Unit) {
     var allRows by remember { mutableStateOf(emptyList<CsvRow>()) }
@@ -157,6 +201,9 @@ fun ChartScreen(file: File, onBack: () -> Unit) {
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                val fpsStats = remember(displayRows) { computeFpsStats(displayRows) }
+                FpsStatsCard(fpsStats)
+
                 MpChartCard(stringResource(R.string.chart_fps_over_time), displayRows) { row, i -> listOf(Entry(i, row.fps)) }
 
                 MpChartCardMulti(
@@ -177,22 +224,95 @@ fun ChartScreen(file: File, onBack: () -> Unit) {
 }
 
 @Composable
+fun FpsStatsCard(stats: FpsStats) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                stringResource(R.string.chart_fps_stats),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                StatItem(stringResource(R.string.chart_stat_min), stats.min)
+                StatItem(stringResource(R.string.chart_stat_avg), stats.avg)
+                StatItem(stringResource(R.string.chart_stat_max), stats.max)
+                StatItem(stringResource(R.string.chart_stat_1pct_low), stats.onePercentLow)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                stringResource(R.string.chart_stat_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun StatItem(label: String, value: Float) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(String.format("%.0f", value), style = MaterialTheme.typography.titleLarge)
+        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun ChartCardHeader(title: String, onReset: () -> Unit, onExport: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            title,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.weight(1f)
+        )
+        IconButton(onClick = onReset, modifier = Modifier.size(32.dp)) {
+            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.chart_reset_zoom), modifier = Modifier.size(18.dp))
+        }
+        IconButton(onClick = onExport, modifier = Modifier.size(32.dp)) {
+            Icon(Icons.Default.Share, contentDescription = stringResource(R.string.chart_export_image), modifier = Modifier.size(18.dp))
+        }
+    }
+}
+
+// Enable horizontal (time-axis) pinch-zoom + pan. Y zoom stays off and the
+// chart requests disallow-intercept while gesturing, so the outer vertical
+// scroll keeps working.
+private fun LineChart.enableTimeAxisZoom() {
+    setTouchEnabled(true)
+    isDragEnabled = true
+    setScaleXEnabled(true)
+    setScaleYEnabled(false)
+    setPinchZoom(true)
+    isDoubleTapToZoomEnabled = false
+}
+
+@Composable
 fun MpChartCard(title: String, rows: List<CsvRow>, extractor: (CsvRow, Float) -> List<Entry>) {
+    val context = LocalContext.current
     val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    var chartRef by remember { mutableStateOf<LineChart?>(null) }
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth().height(250.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(12.dp).fillMaxSize()) {
-            Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            ChartCardHeader(
+                title = title,
+                onReset = { chartRef?.fitScreen() },
+                onExport = { exportChartImage(context, chartRef) }
+            )
             Spacer(modifier = Modifier.height(4.dp))
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { ctx ->
                     LineChart(ctx).apply {
-                        setTouchEnabled(false) // Disable interactions for performance & static view
+                        enableTimeAxisZoom()
                         description.isEnabled = false
                         legend.textColor = textColor
                         xAxis.textColor = textColor
@@ -200,6 +320,7 @@ fun MpChartCard(title: String, rows: List<CsvRow>, extractor: (CsvRow, Float) ->
                         axisLeft.textColor = textColor
                         axisRight.isEnabled = false
                         setDrawGridBackground(false)
+                        chartRef = this
                     }
                 },
                 update = { chart ->
@@ -220,22 +341,28 @@ fun MpChartCard(title: String, rows: List<CsvRow>, extractor: (CsvRow, Float) ->
 
 @Composable
 fun MpChartCardMulti(title: String, label1: String, label2: String, rows: List<CsvRow>, extractor: (CsvRow, Float) -> Pair<Entry, Entry>) {
+    val context = LocalContext.current
     val color1 = MaterialTheme.colorScheme.primary.toArgb()
     val color2 = MaterialTheme.colorScheme.tertiary.toArgb()
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    var chartRef by remember { mutableStateOf<LineChart?>(null) }
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth().height(250.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(12.dp).fillMaxSize()) {
-            Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            ChartCardHeader(
+                title = title,
+                onReset = { chartRef?.fitScreen() },
+                onExport = { exportChartImage(context, chartRef) }
+            )
             Spacer(modifier = Modifier.height(4.dp))
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { ctx ->
                     LineChart(ctx).apply {
-                        setTouchEnabled(false)
+                        enableTimeAxisZoom()
                         description.isEnabled = false
                         legend.textColor = textColor
                         xAxis.textColor = textColor
@@ -243,6 +370,7 @@ fun MpChartCardMulti(title: String, label1: String, label2: String, rows: List<C
                         axisLeft.textColor = textColor
                         axisRight.isEnabled = false
                         setDrawGridBackground(false)
+                        chartRef = this
                     }
                 },
                 update = { chart ->

@@ -55,6 +55,16 @@
     <string name="chart_battery_power">Battery Power (W)</string>
     <string name="chart_cpu_usage_pct">CPU Usage (%)</string>
     <string name="chart_gpu_usage_pct">GPU Usage (%)</string>
+    <string name="chart_fps_stats">FPS Statistics</string>
+    <string name="chart_stat_min">Min</string>
+    <string name="chart_stat_avg">Avg</string>
+    <string name="chart_stat_max">Max</string>
+    <string name="chart_stat_1pct_low">1% Low</string>
+    <string name="chart_stat_note">1% Low is computed from sampled readings (every ~0.5s), not per-frame.</string>
+    <string name="chart_reset_zoom">Reset zoom</string>
+    <string name="chart_export_image">Export as image</string>
+    <string name="chart_export_success">Chart image saved to Downloads</string>
+    <string name="chart_export_failed">Chart export failed</string>
 
     <string name="records_no_records">No records found</string>
     <string name="records_empty_hint">Start the overlay and tap the record button to capture your first session.</string>

@@ -55,6 +55,16 @@
     <string name="chart_battery_power">电池耗电功率 (W)</string>
     <string name="chart_cpu_usage_pct">CPU 占用率 (%)</string>
     <string name="chart_gpu_usage_pct">GPU 占用率 (%)</string>
+    <string name="chart_fps_stats">FPS 统计</string>
+    <string name="chart_stat_min">最低</string>
+    <string name="chart_stat_avg">平均</string>
+    <string name="chart_stat_max">最高</string>
+    <string name="chart_stat_1pct_low">1% Low</string>
+    <string name="chart_stat_note">1% Low 基于采样数据（约每 0.5 秒）计算，并非逐帧统计。</string>
+    <string name="chart_reset_zoom">重置缩放</string>
+    <string name="chart_export_image">导出为图片</string>
+    <string name="chart_export_success">图表已保存至 Downloads 目录</string>
+    <string name="chart_export_failed">图表导出失败</string>
 
     <string name="records_no_records">暂无记录</string>
     <string name="records_empty_hint">启动悬浮窗后，点击记录按钮即可捕获你的第一段性能数据。</string>
