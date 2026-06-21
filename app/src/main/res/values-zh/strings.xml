@@ -57,6 +57,7 @@
     <string name="chart_gpu_usage_pct">GPU 占用率 (%)</string>
 
     <string name="records_no_records">暂无记录</string>
+    <string name="records_empty_hint">启动悬浮窗后，点击记录按钮即可捕获你的第一段性能数据。</string>
     <string name="records_export">导出到 Downloads 目录</string>
     <string name="records_exported">已导出到 Downloads 目录</string>
     <string name="records_export_failed">导出失败</string>

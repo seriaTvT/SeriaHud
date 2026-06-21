@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import java.io.File
 import java.text.SimpleDateFormat
@@ -23,10 +24,9 @@ import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun RecordsScreen() {
+fun RecordsScreen(onOpenChart: (File) -> Unit) {
     val context = LocalContext.current
     var files by remember { mutableStateOf<List<File>>(emptyList()) }
-    var selectedFileForChart by remember { mutableStateOf<File?>(null) }
 
     fun loadFiles() {
         val recordsDir = File(context.getExternalFilesDir(null), "records")
@@ -39,14 +39,29 @@ fun RecordsScreen() {
         loadFiles()
     }
 
-    if (selectedFileForChart != null) {
-        ChartScreen(file = selectedFileForChart!!, onBack = { selectedFileForChart = null })
-        return
-    }
-
     if (files.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stringResource(R.string.records_no_records), style = MaterialTheme.typography.bodyLarge)
+        Box(modifier = Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.List,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    stringResource(R.string.records_no_records),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    stringResource(R.string.records_empty_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
         return
     }
@@ -65,7 +80,7 @@ fun RecordsScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .combinedClickable(
-                        onClick = { selectedFileForChart = file },
+                        onClick = { onOpenChart(file) },
                         onLongClick = { showMenu = true }
                     ),
                 colors = CardDefaults.elevatedCardColors(

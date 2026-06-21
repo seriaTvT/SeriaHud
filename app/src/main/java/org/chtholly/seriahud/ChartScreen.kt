@@ -220,8 +220,8 @@ fun MpChartCard(title: String, rows: List<CsvRow>, extractor: (CsvRow, Float) ->
 
 @Composable
 fun MpChartCardMulti(title: String, label1: String, label2: String, rows: List<CsvRow>, extractor: (CsvRow, Float) -> Pair<Entry, Entry>) {
-    val color1 = android.graphics.Color.parseColor("#4CAF50") // Green
-    val color2 = android.graphics.Color.parseColor("#9C27B0") // Purple
+    val color1 = MaterialTheme.colorScheme.primary.toArgb()
+    val color2 = MaterialTheme.colorScheme.tertiary.toArgb()
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
 
     ElevatedCard(

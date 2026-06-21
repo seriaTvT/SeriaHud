@@ -17,8 +17,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,11 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.chtholly.seriahud.theme.SeriaHudTheme
-import java.io.BufferedReader
-import java.io.FileReader
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -45,8 +47,17 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SeriaHudTheme {
-                var selectedTab by remember { mutableIntStateOf(0) }
-                
+                val backStack = rememberNavBackStack(Route.Home)
+                // The selected tab tracks the root of the current stack, so a
+                // Chart drilled in from Records keeps the Records tab highlighted.
+                val currentRoot = backStack.firstOrNull() ?: Route.Home
+
+                fun switchTab(route: Route) {
+                    if (backStack.size == 1 && backStack.first() == route) return
+                    backStack.clear()
+                    backStack.add(route)
+                }
+
                 Scaffold(
                     topBar = {
                         CenterAlignedTopAppBar(
@@ -58,33 +69,39 @@ class MainActivity : ComponentActivity() {
                             NavigationBarItem(
                                 icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
                                 label = { Text(stringResource(R.string.title_home)) },
-                                selected = selectedTab == 0,
-                                onClick = { selectedTab = 0 }
+                                selected = currentRoot is Route.Home,
+                                onClick = { switchTab(Route.Home) }
                             )
                             NavigationBarItem(
-                                icon = { Icon(Icons.Default.List, contentDescription = "Records") },
+                                icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Records") },
                                 label = { Text(stringResource(R.string.title_records)) },
-                                selected = selectedTab == 1,
-                                onClick = { selectedTab = 1 }
+                                selected = currentRoot is Route.Records,
+                                onClick = { switchTab(Route.Records) }
                             )
                             NavigationBarItem(
                                 icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                                 label = { Text(stringResource(R.string.title_settings)) },
-                                selected = selectedTab == 2,
-                                onClick = { selectedTab = 2 }
+                                selected = currentRoot is Route.Settings,
+                                onClick = { switchTab(Route.Settings) }
                             )
                         }
                     }
                 ) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                        if (selectedTab == 0) {
-                            HomeScreen()
-                        } else if (selectedTab == 1) {
-                            RecordsScreen()
-                        } else {
-                            SettingsScreen(configManager)
+                    NavDisplay(
+                        backStack = backStack,
+                        modifier = Modifier.padding(innerPadding).fillMaxSize(),
+                        onBack = { backStack.removeLastOrNull() },
+                        entryProvider = entryProvider {
+                            entry<Route.Home> { HomeScreen() }
+                            entry<Route.Records> {
+                                RecordsScreen(onOpenChart = { file -> backStack.add(Route.Chart(file.absolutePath)) })
+                            }
+                            entry<Route.Settings> { SettingsScreen(configManager) }
+                            entry<Route.Chart> { route ->
+                                ChartScreen(file = File(route.path), onBack = { backStack.removeLastOrNull() })
+                            }
                         }
-                    }
+                    )
                 }
             }
         }
@@ -170,35 +187,30 @@ class MainActivity : ComponentActivity() {
             item { Spacer(modifier = Modifier.height(32.dp)) }
 
             item {
+                val isRunning = OverlayService.isRunning
                 Button(
                     modifier = Modifier.fillMaxWidth(0.8f).height(50.dp),
+                    colors = if (isRunning) {
+                        ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    } else {
+                        ButtonDefaults.buttonColors()
+                    },
                     onClick = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this@MainActivity)) {
-                            val intent = Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:$packageName")
+                        if (isRunning) {
+                            stopService(Intent(this@MainActivity, OverlayService::class.java))
+                        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this@MainActivity)) {
+                            startActivity(
+                                Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:$packageName")
+                                )
                             )
-                            startActivity(intent)
                         } else {
-                            val intent = Intent(this@MainActivity, OverlayService::class.java)
-                            startService(intent)
+                            startService(Intent(this@MainActivity, OverlayService::class.java))
                         }
                     }
                 ) {
-                    Text(stringResource(R.string.btn_start_monitor))
-                }
-            }
-            
-            item {
-                Button(
-                    modifier = Modifier.fillMaxWidth(0.8f).height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                    onClick = {
-                        val intent = Intent(this@MainActivity, OverlayService::class.java)
-                        stopService(intent)
-                    }
-                ) {
-                    Text(stringResource(R.string.btn_stop_monitor))
+                    Text(stringResource(if (isRunning) R.string.btn_stop_monitor else R.string.btn_start_monitor))
                 }
             }
         }

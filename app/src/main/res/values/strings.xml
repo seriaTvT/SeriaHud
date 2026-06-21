@@ -57,6 +57,7 @@
     <string name="chart_gpu_usage_pct">GPU Usage (%)</string>
 
     <string name="records_no_records">No records found</string>
+    <string name="records_empty_hint">Start the overlay and tap the record button to capture your first session.</string>
     <string name="records_export">Export to Downloads</string>
     <string name="records_exported">Exported to Downloads</string>
     <string name="records_export_failed">Export failed</string>

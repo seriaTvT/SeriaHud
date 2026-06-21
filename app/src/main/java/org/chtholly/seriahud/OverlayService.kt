@@ -43,6 +43,12 @@ import kotlinx.coroutines.flow.collectLatest
 
 class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelStoreOwner {
 
+    companion object {
+        // Observable so the Home screen toggle reflects live service state.
+        var isRunning by mutableStateOf(false)
+            private set
+    }
+
     private lateinit var windowManager: WindowManager
     private lateinit var composeView: ComposeView
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
@@ -156,6 +162,7 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
         }
         
         windowManager.addView(composeView, windowLayoutParams)
+        isRunning = true
     }
 
     override fun onDestroy() {
@@ -164,6 +171,7 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
             dataRecorder.stopRecording()
         }
         windowManager.removeView(composeView)
+        isRunning = false
     }
 }
 
