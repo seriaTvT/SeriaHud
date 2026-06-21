@@ -42,6 +42,23 @@
     <string name="setting_show_record_button">Show Data Record Button</string>
     <string name="setting_double_battery_power">Dual-cell Battery Compensation (Power x2)</string>
 
+    <string name="setting_overlay_appearance">Overlay Appearance</string>
+    <string name="setting_overlay_opacity">Background Opacity</string>
+    <string name="setting_overlay_font_scale">Font Size</string>
+    <string name="setting_overlay_corner_radius">Corner Radius</string>
+    <string name="corner_none">None</string>
+    <string name="corner_small">Small</string>
+    <string name="corner_medium">Medium</string>
+    <string name="corner_large">Large</string>
+    <string name="setting_overlay_accent">Color Theme</string>
+    <string name="setting_overlay_position">Position</string>
+    <string name="pos_custom">Custom (drag)</string>
+    <string name="pos_top_left">Top Left</string>
+    <string name="pos_top_right">Top Right</string>
+    <string name="pos_bottom_left">Bottom Left</string>
+    <string name="pos_bottom_right">Bottom Right</string>
+    <string name="setting_overlay_compact">Compact Metrics (share lines)</string>
+
     <string name="setting_diagnostic">Run Hardware Diagnostic</string>
     <string name="setting_diagnostic_desc">Execute a root script to collect hardware node paths. The report will be saved to your Download folder.</string>
     <string name="diagnostic_success">Report saved to /sdcard/Download/seriahud_diagnostic.txt</string>

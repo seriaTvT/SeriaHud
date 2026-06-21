@@ -42,6 +42,23 @@
     <string name="setting_show_record_button">显示数据记录悬浮按钮 (导出CSV)</string>
     <string name="setting_double_battery_power">双电芯设备功率补偿 (功率 x2)</string>
 
+    <string name="setting_overlay_appearance">悬浮窗外观</string>
+    <string name="setting_overlay_opacity">背景不透明度</string>
+    <string name="setting_overlay_font_scale">字体大小</string>
+    <string name="setting_overlay_corner_radius">圆角大小</string>
+    <string name="corner_none">无</string>
+    <string name="corner_small">小</string>
+    <string name="corner_medium">中</string>
+    <string name="corner_large">大</string>
+    <string name="setting_overlay_accent">配色方案</string>
+    <string name="setting_overlay_position">显示位置</string>
+    <string name="pos_custom">自定义 (拖动)</string>
+    <string name="pos_top_left">左上</string>
+    <string name="pos_top_right">右上</string>
+    <string name="pos_bottom_left">左下</string>
+    <string name="pos_bottom_right">右下</string>
+    <string name="setting_overlay_compact">紧凑布局 (合并到同一行)</string>
+
     <string name="setting_diagnostic">生成硬件诊断报告</string>
     <string name="setting_diagnostic_desc">执行 Root 脚本搜集底层硬件节点路径。报告将自动保存至系统 Download 文件夹。</string>
     <string name="diagnostic_success">报告已生成至 /sdcard/Download/seriahud_diagnostic.txt</string>

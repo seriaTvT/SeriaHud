@@ -1,13 +1,18 @@
 package org.chtholly.seriahud
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -19,8 +24,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import org.chtholly.seriahud.theme.HudPalette
+import kotlin.math.roundToInt
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(configManager: HudConfigManager) {
     val config by configManager.configFlow.collectAsStateWithLifecycle()
@@ -86,6 +93,105 @@ fun SettingsScreen(configManager: HudConfigManager) {
             }
             SwitchSetting(stringResource(R.string.setting_double_battery_power), config.doubleBatteryPower) {
                 configManager.updateConfig(config.copy(doubleBatteryPower = it))
+            }
+        }
+
+        SettingsSection(stringResource(R.string.setting_overlay_appearance)) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                SliderSetting(
+                    label = stringResource(R.string.setting_overlay_opacity),
+                    value = config.overlayOpacity,
+                    valueRange = 0.3f..1.0f,
+                    valueText = "${(config.overlayOpacity * 100).roundToInt()}%"
+                ) { configManager.updateConfig(config.copy(overlayOpacity = it)) }
+
+                SliderSetting(
+                    label = stringResource(R.string.setting_overlay_font_scale),
+                    value = config.fontScale,
+                    valueRange = 0.8f..1.4f,
+                    valueText = String.format("%.1fx", config.fontScale)
+                ) { configManager.updateConfig(config.copy(fontScale = it)) }
+
+                Column {
+                    Text(stringResource(R.string.setting_overlay_corner_radius), style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    val cornerOptions = listOf(
+                        0 to R.string.corner_none,
+                        8 to R.string.corner_small,
+                        16 to R.string.corner_medium,
+                        24 to R.string.corner_large
+                    )
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        cornerOptions.forEachIndexed { index, (radius, labelRes) ->
+                            SegmentedButton(
+                                selected = config.cornerRadiusDp == radius,
+                                onClick = { configManager.updateConfig(config.copy(cornerRadiusDp = radius)) },
+                                shape = SegmentedButtonDefaults.itemShape(index, cornerOptions.size)
+                            ) { Text(stringResource(labelRes)) }
+                        }
+                    }
+                }
+
+                Column {
+                    Text(stringResource(R.string.setting_overlay_accent), style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        HudPalette.Presets.forEachIndexed { index, palette ->
+                            PresetSwatch(palette = palette, selected = config.accentPresetIndex == index) {
+                                configManager.updateConfig(config.copy(accentPresetIndex = index))
+                            }
+                        }
+                    }
+                }
+
+                Column {
+                    Text(stringResource(R.string.setting_overlay_position), style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    val positionOptions = listOf(
+                        HudConfig.POS_CUSTOM to R.string.pos_custom,
+                        HudConfig.POS_TOP_LEFT to R.string.pos_top_left,
+                        HudConfig.POS_TOP_RIGHT to R.string.pos_top_right,
+                        HudConfig.POS_BOTTOM_LEFT to R.string.pos_bottom_left,
+                        HudConfig.POS_BOTTOM_RIGHT to R.string.pos_bottom_right
+                    )
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        positionOptions.forEach { (value, labelRes) ->
+                            FilterChip(
+                                selected = config.positionPreset == value,
+                                onClick = { configManager.updateConfig(config.copy(positionPreset = value)) },
+                                label = { Text(stringResource(labelRes)) }
+                            )
+                        }
+                    }
+                }
+
+                Column {
+                    Text(stringResource(R.string.setting_overlay_compact), style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    val metricOptions = listOf(
+                        HudConfig.METRIC_FPS to R.string.overlay_fps,
+                        HudConfig.METRIC_GPU to R.string.overlay_gpu,
+                        HudConfig.METRIC_CPU to R.string.overlay_cpu,
+                        HudConfig.METRIC_RAM to R.string.overlay_ram,
+                        HudConfig.METRIC_BAT to R.string.overlay_batt_temp
+                    )
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        metricOptions.forEach { (key, labelRes) ->
+                            FilterChip(
+                                selected = key in config.compactMetrics,
+                                onClick = {
+                                    val newSet = config.compactMetrics.toMutableSet()
+                                    if (key in newSet) newSet.remove(key) else newSet.add(key)
+                                    configManager.updateConfig(config.copy(compactMetrics = newSet))
+                                },
+                                label = { Text(stringResource(labelRes)) }
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -229,5 +335,45 @@ fun CoreCheckbox(coreId: Int, selected: Boolean, onCheckedChange: (Boolean) -> U
     Row(verticalAlignment = Alignment.CenterVertically) {
         Checkbox(checked = selected, onCheckedChange = onCheckedChange)
         Text(stringResource(R.string.setting_core_format, coreId), style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+fun SliderSetting(
+    label: String,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float>,
+    valueText: String,
+    onValueChange: (Float) -> Unit
+) {
+    Column {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(label, style = MaterialTheme.typography.bodyMedium)
+            Text(valueText, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Slider(value = value, onValueChange = onValueChange, valueRange = valueRange)
+    }
+}
+
+@Composable
+fun PresetSwatch(palette: HudPalette, selected: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(width = 56.dp, height = 40.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(palette.background)
+            .border(
+                width = if (selected) 2.dp else 1.dp,
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+            listOf(palette.fps, palette.gpu, palette.cpu).forEach { dotColor ->
+                Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(dotColor))
+            }
+        }
     }
 }

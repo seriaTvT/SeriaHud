@@ -18,12 +18,35 @@ data class HudConfig(
     val showFps: Boolean = true,
     val showFrametimeGraph: Boolean = true,
     val showRecordButton: Boolean = true,
-    val doubleBatteryPower: Boolean = false
-)
+    val doubleBatteryPower: Boolean = false,
+    // --- Overlay appearance (Phase 3 skinning) ---
+    val overlayOpacity: Float = 0.67f, // matches the original 0xAA black background
+    val accentPresetIndex: Int = 0, // index into HudPalette.Presets
+    val cornerRadiusDp: Int = 8,
+    val fontScale: Float = 1.0f,
+    val compactMetrics: Set<String> = emptySet(), // metric keys rendered inline
+    val positionPreset: String = POS_CUSTOM,
+    val overlayX: Int = 100,
+    val overlayY: Int = 100,
+) {
+    companion object {
+        const val POS_CUSTOM = "custom"
+        const val POS_TOP_LEFT = "top_left"
+        const val POS_TOP_RIGHT = "top_right"
+        const val POS_BOTTOM_LEFT = "bottom_left"
+        const val POS_BOTTOM_RIGHT = "bottom_right"
+
+        const val METRIC_FPS = "fps"
+        const val METRIC_GPU = "gpu"
+        const val METRIC_CPU = "cpu"
+        const val METRIC_RAM = "ram"
+        const val METRIC_BAT = "bat"
+    }
+}
 
 class HudConfigManager(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("hud_config", Context.MODE_PRIVATE)
-    
+
     private val _configFlow = MutableStateFlow(loadConfig())
     val configFlow: StateFlow<HudConfig> = _configFlow.asStateFlow()
 
@@ -50,7 +73,15 @@ class HudConfigManager(context: Context) {
             showFps = prefs.getBoolean("showFps", true),
             showFrametimeGraph = prefs.getBoolean("showFrametimeGraph", true),
             showRecordButton = prefs.getBoolean("showRecordButton", true),
-            doubleBatteryPower = prefs.getBoolean("doubleBatteryPower", false)
+            doubleBatteryPower = prefs.getBoolean("doubleBatteryPower", false),
+            overlayOpacity = prefs.getFloat("overlayOpacity", 0.67f),
+            accentPresetIndex = prefs.getInt("accentPresetIndex", 0),
+            cornerRadiusDp = prefs.getInt("cornerRadiusDp", 8),
+            fontScale = prefs.getFloat("fontScale", 1.0f),
+            compactMetrics = prefs.getStringSet("compactMetrics", emptySet())?.toSet() ?: emptySet(),
+            positionPreset = prefs.getString("positionPreset", HudConfig.POS_CUSTOM) ?: HudConfig.POS_CUSTOM,
+            overlayX = prefs.getInt("overlayX", 100),
+            overlayY = prefs.getInt("overlayY", 100),
         )
     }
 
@@ -67,8 +98,16 @@ class HudConfigManager(context: Context) {
             putBoolean("showFrametimeGraph", config.showFrametimeGraph)
             putBoolean("showRecordButton", config.showRecordButton)
             putBoolean("doubleBatteryPower", config.doubleBatteryPower)
+            putFloat("overlayOpacity", config.overlayOpacity)
+            putInt("accentPresetIndex", config.accentPresetIndex)
+            putInt("cornerRadiusDp", config.cornerRadiusDp)
+            putFloat("fontScale", config.fontScale)
+            putStringSet("compactMetrics", config.compactMetrics)
+            putString("positionPreset", config.positionPreset)
+            putInt("overlayX", config.overlayX)
+            putInt("overlayY", config.overlayY)
         }.apply()
-        
+
         _configFlow.value = config
     }
 }
