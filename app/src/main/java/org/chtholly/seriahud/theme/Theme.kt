@@ -13,9 +13,8 @@ import com.materialkolor.rememberDynamicColorScheme
 fun SeriaHudTheme(
   darkTheme: Boolean = isSystemInDarkTheme(),
   // Dynamic color (Material You wallpaper colors) is available on Android 12+.
-  // Defaults to OFF so the pastel-pink brand ships by default; flip to true
-  // (or expose a setting) to let users opt into wallpaper-derived colors.
-  dynamicColor: Boolean = false,
+  // Falls back to the pastel-pink MaterialKolor palette below API 31 or if disabled.
+  dynamicColor: Boolean = true,
   content: @Composable () -> Unit,
 ) {
   val colorScheme =
